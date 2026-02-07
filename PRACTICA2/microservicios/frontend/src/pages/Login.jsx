@@ -6,10 +6,12 @@ import { useNavigate } from 'react-router-dom';
 function Login() {
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
 
     try {
       const res = await login({ correo, password });
@@ -30,20 +32,42 @@ function Login() {
         alert('Rol desconocido');
       }
     } catch (err) {
-      alert('Credenciales incorrectas');
-      console.error(err.response?.data || err.message);
+      const data = err.response?.data;
+
+      if (data?.code === 5) {
+        setError('El usuario no existe. ');
+        return;
+      }
+
+      if (data?.code === 16) {
+        setError('Credenciales inválidas.');
+        return;
+      }
+
+      alert('Error al iniciar sesión');
+      console.error(data || err.message);
     }
   };
 
   return (
     <div style={{ padding: 40 }}>
       <h2>Login</h2>
+
+      {error && (
+        <p style={{ color: 'red', marginBottom: 10 }}>
+          {error}
+        </p>
+      )}
+
       <form onSubmit={handleSubmit}>
         <input
           type="email"
           placeholder="Correo"
           value={correo}
-          onChange={e => setCorreo(e.target.value)}
+          onChange={e => {
+            setCorreo(e.target.value);
+            setError('');
+          }}
           required
         /><br /><br />
 
@@ -51,7 +75,10 @@ function Login() {
           type="password"
           placeholder="Contraseña"
           value={password}
-          onChange={e => setPassword(e.target.value)}
+          onChange={e => {
+            setPassword(e.target.value);
+            setError('');
+          }}
           required
         /><br /><br />
 

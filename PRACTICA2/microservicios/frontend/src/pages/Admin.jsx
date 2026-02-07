@@ -7,21 +7,37 @@ function Admin() {
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
   const [rol, setRol] = useState('REPARTIDOR');
+  const [error, setError] = useState('');
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setError('');
 
     try {
       await registerAdmin({ nombre, correo, password, rol });
 
-      alert(`${rol} registrado correctamente ✅`);
+      alert(`${rol} registrado correctamente. `);
       setNombre('');
       setCorreo('');
       setPassword('');
       setRol('REPARTIDOR');
     } catch (err) {
-      console.error('ERROR REAL:', err.response?.data || err.message);
-      alert(err.response?.data?.message || err.message || 'Error al registrar usuario');
+      const data = err.response?.data;
+
+      // 🔹 Error 6: ALREADY_EXISTS
+      if (data?.code === 6) {
+        setError('El correo ya está registrado. ');
+        return;
+      }
+
+      // 🔹 Error 3: INVALID_ARGUMENT
+      if (data?.code === 3) {
+        setError('Faltan datos obligatorios. ');
+        return;
+      }
+
+      alert(data?.error || 'Error al registrar usuario');
+      console.error('ERROR REAL:', data || err.message);
     }
   };
 
@@ -29,11 +45,21 @@ function Admin() {
     <div style={{ padding: 40 }}>
       <h1>Panel de Administración</h1>
       <h3>Registrar Repartidor o Restaurante</h3>
+
+      {error && (
+        <p style={{ color: 'red', marginBottom: 10 }}>
+          {error}
+        </p>
+      )}
+
       <form onSubmit={handleRegister}>
         <input
           placeholder="Nombre"
           value={nombre}
-          onChange={e => setNombre(e.target.value)}
+          onChange={e => {
+            setNombre(e.target.value);
+            setError('');
+          }}
           required
         /><br /><br />
 
@@ -41,7 +67,10 @@ function Admin() {
           type="email"
           placeholder="Correo"
           value={correo}
-          onChange={e => setCorreo(e.target.value)}
+          onChange={e => {
+            setCorreo(e.target.value);
+            setError('');
+          }}
           required
         /><br /><br />
 
@@ -49,11 +78,20 @@ function Admin() {
           type="password"
           placeholder="Contraseña"
           value={password}
-          onChange={e => setPassword(e.target.value)}
+          onChange={e => {
+            setPassword(e.target.value);
+            setError('');
+          }}
           required
         /><br /><br />
 
-        <select value={rol} onChange={e => setRol(e.target.value)}>
+        <select
+          value={rol}
+          onChange={e => {
+            setRol(e.target.value);
+            setError('');
+          }}
+        >
           <option value="REPARTIDOR">Repartidor</option>
           <option value="RESTAURANTE">Restaurante</option>
         </select><br /><br />
