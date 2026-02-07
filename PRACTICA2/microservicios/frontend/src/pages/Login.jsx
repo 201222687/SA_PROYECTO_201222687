@@ -1,106 +1,97 @@
-// Importamos React y el hook useState para manejar estado del formulario
-import React, { useState } from 'react';
-
-// Importamos la función que hace la petición al API Gateway para login
-import { loginUser } from '../api/auth';
-
-// Link permite navegar entre páginas sin recargar
-// useNavigate sirve para redireccionar por código
-import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { login } from '../api/auth.api';
+import { jwtDecode } from 'jwt-decode';
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
-  // Estados para capturar los valores del formulario
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
-
-  // Estado para mostrar mensajes al usuario (errores o éxito)
-  const [mensaje, setMensaje] = useState('');
-
-  // Hook para redireccionar a otra ruta
   const navigate = useNavigate();
 
-  /**
-   * Función que se ejecuta al enviar el formulario de login
-   * - Envía correo y password al API Gateway
-   * - Si es correcto, guarda el JWT en localStorage
-   */
-  const handleLogin = async (e) => {
-    e.preventDefault(); // Evita que la página se recargue
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
     try {
-      // Llamada al backend (API Gateway → Auth-Service)
-      const res = await loginUser(correo, password);
+      const res = await login({ correo, password });
+      const token = res.data.token;
 
-      // Guardamos el token JWT en el navegador
-      localStorage.setItem('token', res.token);
+      // Guardar token
+      localStorage.setItem('token', token);
 
-      setMensaje('Login exitoso');
-    } catch (error) {
-      // Si hay error (credenciales incorrectas, etc.)
-      setMensaje(error.message);
+      // Decodificar JWT
+      const decoded = jwtDecode(token);
+
+      // Redirección por rol
+      if (decoded.rol === 'ADMIN') {
+        navigate('/admin');
+      } else if (decoded.rol === 'CLIENTE') {
+        navigate('/cliente');
+      } else {
+        alert('Rol desconocido');
+      }
+    } catch (err) {
+      alert('Credenciales incorrectas');
+      console.error(err.response?.data || err.message);
     }
   };
 
-  /**
-   * Función para cerrar sesión
-   * - Elimina el JWT del navegador
-   * - Redirige nuevamente al login
-   */
-  const handleLogout = () => {
-    localStorage.removeItem('token'); // Eliminamos el token
-    setMensaje('Sesión cerrada');
-    navigate('/login'); // Redirigimos al login
-  };
-
-  // Verificamos si hay un token guardado
-  const token = localStorage.getItem('token');
-
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ padding: 40 }}>
       <h2>Login</h2>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="email"
+          placeholder="Correo"
+          value={correo}
+          onChange={e => setCorreo(e.target.value)}
+          required
+        /><br /><br />
 
-      {/* 
-        Si NO existe token → mostramos formulario de login
-        Si EXISTE token → mostramos botón de cerrar sesión
-      */}
-      {!token ? (
-        <>
-          <form onSubmit={handleLogin}>
-            <input
-              placeholder="Correo"
-              value={correo}
-              onChange={e => setCorreo(e.target.value)}
-              required
-            />
-            <br />
+        <input
+          type="password"
+          placeholder="Contraseña"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required
+        /><br /><br />
 
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-            />
-            <br />
-
-            <button type="submit">Ingresar</button>
-          </form>
-
-          {/* Enlace para ir a registro */}
-          <Link to="/register">Crear cuenta</Link>
-        </>
-      ) : (
-        <>
-          {/* Si ya hay sesión activa */}
-          <p>Ya hay una sesión activa</p>
-          <button onClick={handleLogout}>Cerrar sesión</button>
-        </>
-      )}
-
-      {/* Mensajes de estado */}
-      <p>{mensaje}</p>
+        <button type="submit">Ingresar</button>
+      </form>
     </div>
   );
 }
 
 export default Login;
+
+
+/*
+Notas importantes:
+
+Roles
+
+Cliente → CLIENTE
+
+Administrador → ADMIN
+
+Repartidor → REPARTIDOR
+
+Restaurante → RESTAURANTE
+
+Token JWT
+
+Siempre se guarda en localStorage.
+
+Admin lo envía en headers para registrar usuarios (repartidor/restaurante).
+
+Rutas protegidas
+
+Se controla en App.jsx revisando rol desde el token.
+
+Redirecciona automáticamente al login si no coincide el rol.
+
+Registro
+
+Cliente → no requiere token
+
+Admin → requiere token
+*/
