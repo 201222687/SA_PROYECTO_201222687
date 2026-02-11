@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package catalog;
+
+// Servicio que expone el microservicio de catálogo
+service CatalogService {
+
+  // Método que el Order-Service llamará antes de guardar la orden
+  rpc ValidateOrder (ValidationRequest) returns (ValidationResponse);
+}
+
+// Representa un item que el cliente quiere comprar
+message OrderItem {
+  int32 id_item = 1;          // ID del producto en el catálogo
+  int32 cantidad = 2;         // Cantidad solicitada
+  double precio_cliente = 3;  // Precio que el frontend envía
+}
+
+// Mensaje que recibe el catálogo para validar
+message ValidationRequest {
+  int32 id_restaurante = 1;       // Restaurante seleccionado
+  repeated OrderItem items = 2;   // Lista de productos
+}
+
+// Respuesta del catálogo al order-service
+message ValidationResponse {
+  bool valido = 1;         // Indica si la orden es válida
+  string mensaje = 2;      // Mensaje de error o éxito
+}
