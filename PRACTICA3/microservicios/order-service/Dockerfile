@@ -11,4 +11,4 @@ COPY . .
 # Puerto REST del order-service
 EXPOSE 3002
 
-CMD ["node", "src/server.js"]
+CMD ["node", "server.js"]

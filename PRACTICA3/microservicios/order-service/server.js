@@ -1,3 +1,20 @@
+require("dotenv").config();
+const express = require("express");
+
+const app = express();
+app.use(express.json());
+
+// Importar rutas
+const orderRoutes = require("./src/routes/order.routes");
+app.use("/", orderRoutes);
+
+const PORT = process.env.PORT || 3002;
+
+app.listen(PORT, () => {
+  console.log(`🚀 Order-Service corriendo en puerto ${PORT}`);
+});
+
+/*
 // =============================
 // IMPORTACIONES
 // =============================
@@ -75,7 +92,7 @@ app.post("/orden", async (req, res) => {
           });
         }
 
-             // =============================
+        // =============================
         // CALCULAR TOTAL DE LA ORDEN
         // =============================
         const total = itemsTransformados.reduce((sum, item) => {
@@ -117,3 +134,4 @@ const PORT = process.env.PORT || 3002;
 app.listen(PORT, () => {
   console.log(`Order-Service corriendo en puerto ${PORT}`);
 });
+*/

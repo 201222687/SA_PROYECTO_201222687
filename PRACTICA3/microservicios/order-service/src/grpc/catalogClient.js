@@ -1,8 +1,11 @@
 const grpc = require("@grpc/grpc-js");
 const protoLoader = require("@grpc/proto-loader");
 const path = require("path");
+require("dotenv").config();
 
-// Ruta correcta hacia la carpeta raíz /proto
+// =============================
+// CARGAR PROTO
+// =============================
 const packageDefinition = protoLoader.loadSync(
   path.join(__dirname, "../../../proto/catalog.proto"),
   {
@@ -16,9 +19,23 @@ const packageDefinition = protoLoader.loadSync(
 
 const catalogProto = grpc.loadPackageDefinition(packageDefinition).catalog;
 
-// Cliente gRPC apuntando al catalog-service
+// =============================
+// CONFIGURAR HOST DINÁMICO
+// =============================
+
+// Si está en Docker → usa nombre del servicio
+// Si está local → usa localhost
+
+const CATALOG_HOST =
+  process.env.CATALOG_HOST || "localhost:50052";
+
+console.log("[Order-Service] Conectando a:", CATALOG_HOST);
+
+// =============================
+// CREAR CLIENTE gRPC
+// =============================
 const client = new catalogProto.CatalogService(
-  "localhost:50052", // si estás local
+  CATALOG_HOST,
   grpc.credentials.createInsecure()
 );
 

@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 50052
 
 # Comando para iniciar servicio
-CMD ["node", "src/server.js"]
+CMD ["node", "server.js"]
