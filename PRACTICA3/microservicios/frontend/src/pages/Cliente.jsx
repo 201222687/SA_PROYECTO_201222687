@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { registerCliente } from '../api/auth.api';
-import { createOrder  } from '../api/order.api'; // order-service
+import { createOrder } from '../api/order.api';
 import LogoutButton from '../components/LogoutButton';
 
 function Cliente() {
+
   // =========================
   // REGISTRO
   // =========================
@@ -19,20 +20,21 @@ function Cliente() {
     try {
       await registerCliente({ nombre, correo, password });
 
-      alert('Cliente registrado correctamente. ');
+      alert('Cliente registrado correctamente.');
       setNombre('');
       setCorreo('');
       setPassword('');
+
     } catch (err) {
+
       const data = err.response?.data;
 
-      // 👇 ERROR gRPC: ALREADY_EXISTS
       if (data?.code === 6) {
         setError('El correo ya está registrado.');
         return;
       }
 
-       if (data?.code === 3) {
+      if (data?.code === 3) {
         setError('Faltan datos obligatorios.');
         return;
       }
@@ -41,7 +43,7 @@ function Cliente() {
     }
   };
 
- // =========================
+  // =========================
   // CREAR ORDEN
   // =========================
   const [idRestaurante, setIdRestaurante] = useState('');
@@ -65,26 +67,31 @@ function Cliente() {
     e.preventDefault();
     setMensajeOrden('');
 
-    const data = {
-      id_cliente: 1, // luego lo podemos sacar del token
-      id_restaurante: parseInt(idRestaurante),
-      items: items.map(item => ({
-        id_item: parseInt(item.id_item),
-        cantidad: parseInt(item.cantidad),
-        precio_cliente: parseFloat(item.precio_cliente)
-      }))
-    };
-
     try {
+
+      const data = {
+        id_restaurante: parseInt(idRestaurante),
+        items: items.map(item => ({
+          id_item: parseInt(item.id_item),
+          cantidad: parseInt(item.cantidad),
+          precio_cliente: parseFloat(item.precio_cliente)
+        }))
+      };
+
       const response = await createOrder(data);
-      setMensajeOrden(response.data.mensaje);
+
+      setMensajeOrden(response.data.mensaje || 'Orden creada correctamente');
+
+      // limpiar formulario
+      setIdRestaurante('');
+      setItems([]);
+
     } catch (error) {
       setMensajeOrden(
         error.response?.data?.error || 'Error al crear orden'
       );
     }
   };
-
 
   return (
     <div style={{ padding: 40 }}>
@@ -123,7 +130,9 @@ function Cliente() {
           required
         /><br /><br />
 
-        <button type="submit">Registrar Cliente</button>
+        <button type="submit">
+          Registrar Cliente
+        </button>
       </form>
 
       <hr style={{ margin: "40px 0" }} />
@@ -147,28 +156,34 @@ function Cliente() {
             <input
               type="number"
               placeholder="ID Producto"
+              value={item.id_item}
               onChange={(e) =>
                 handleItemChange(index, 'id_item', e.target.value)
               }
               required
             />
+
             <input
               type="number"
               placeholder="Cantidad"
+              value={item.cantidad}
               onChange={(e) =>
                 handleItemChange(index, 'cantidad', e.target.value)
               }
               required
             />
+
             <input
               type="number"
               step="0.01"
               placeholder="Precio Cliente"
+              value={item.precio_cliente}
               onChange={(e) =>
                 handleItemChange(index, 'precio_cliente', e.target.value)
               }
               required
             />
+
             <br /><br />
           </div>
         ))}
@@ -182,6 +197,7 @@ function Cliente() {
         <button type="submit">
           Crear Orden
         </button>
+
       </form>
 
       {mensajeOrden && (
@@ -192,6 +208,7 @@ function Cliente() {
 
       <br />
       <LogoutButton />
+
     </div>
   );
 }

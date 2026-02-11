@@ -1,16 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
+const jwt = require('jsonwebtoken');
 
-// ================================
-// Host del Order-Service (Docker o local)
-// ================================
 const ORDER_SERVICE_HOST =
   process.env.ORDER_SERVICE_HOST || 'localhost:3002';
 
-// ================================
-// Helper errores REST
-// ================================
 function handleRestError(error, res) {
 
   if (error.response) {
@@ -24,11 +19,6 @@ function handleRestError(error, res) {
   });
 }
 
-// ================================
-// RUTAS
-// ================================
-
-//  Crear Orden (requiere token)
 router.post('/', async (req, res) => {
 
   try {
@@ -41,10 +31,27 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Enviar petición al order-service
+    if (!authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        error: 'Formato de token inválido'
+      });
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const id_cliente = decoded.sub;
+
+    const orderData = {
+      id_cliente,
+      id_restaurante: req.body.id_restaurante,
+      items: req.body.items
+    };
+
     const response = await axios.post(
       `http://${ORDER_SERVICE_HOST}/orden`,
-      req.body,
+      orderData,
       {
         headers: {
           Authorization: authHeader
@@ -55,6 +62,19 @@ router.post('/', async (req, res) => {
     return res.status(response.status).json(response.data);
 
   } catch (error) {
+
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({
+        error: 'Token expirado'
+      });
+    }
+
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({
+        error: 'Token inválido'
+      });
+    }
+
     return handleRestError(error, res);
   }
 
