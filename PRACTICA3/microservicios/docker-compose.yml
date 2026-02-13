@@ -15,7 +15,7 @@ services:
       - ORDER_SERVICE_HOST=order-service:3002
       - JWT_SECRET=delivereats_secret_super_seguro
     volumes:
-      - ./proto:/proto
+      - ./proto:/proto      
     depends_on:
       - auth-service
       - order-service
@@ -63,6 +63,7 @@ services:
       - "3002:3002"
     volumes:
       - ./proto:/proto
+      - ./order-service:/app
     environment:
       - DB_HOST=host.docker.internal
       - DB_USER=root

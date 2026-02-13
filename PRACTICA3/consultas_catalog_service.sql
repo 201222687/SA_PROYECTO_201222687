@@ -4,6 +4,13 @@ use catalog_db;
 select * from menu_items;
 select * from restaurantes;
 
+SELECT * FROM menu_items 
+WHERE id_item = 1 
+AND id_restaurante = 1;
+
+SELECT id_item, disponible FROM menu_items WHERE id_item = 1;
+SELECT precio FROM menu_items WHERE id_item = 1;
+
 
 INSERT INTO restaurantes (nombre, direccion, activo) VALUES
 ('Pizza Planet', 'Zona 10', TRUE),
@@ -48,4 +55,8 @@ INSERT INTO menu_items (id_restaurante, nombre, precio, disponible) VALUES
 (5, 'Tiramisú', 40.00, TRUE);
 
 
+USE catalog_db;
 
+SELECT * 
+FROM menu_items 
+WHERE id_item = 1;

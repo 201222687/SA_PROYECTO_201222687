@@ -1,4 +1,4 @@
-
+-- Base de Datos
 use auth_db;
 
 -- borrar 
@@ -9,8 +9,8 @@ INSERT INTO roles (nombre) VALUES ('ADMIN'), ('CLIENTE'),('RESTAURANTE'), ('REPA
 INSERT INTO usuario_roles (id_usuario,id_role) VALUES (1,2);
 INSERT INTO usuario_roles (id_usuario,id_role) VALUES (8,1);
 
--- Consultas
 
+-- Consultas
 select * from usuarios;
 select * from usuario_roles;
 select * from roles;

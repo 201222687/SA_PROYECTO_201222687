@@ -3,12 +3,52 @@ const router = express.Router();
 const pool = require("../db");
 const client = require("../grpc/catalogClient");
 
+// parte de bitacora inicio
+const fs = require("fs");
+const path = require("path");
+
+// Ruta del archivo de bitácora
+//const logPath = path.join(__dirname, "../../ordenexitosafallida.txt");
+// Ruta ABSOLUTA a la raíz del proyecto
+const logPath = path.join(process.cwd(), "ordenexitosafallida.txt");
+
+// Función para escribir en archivo
+//function escribirLog(contenido) {
+//  fs.appendFileSync(logPath, contenido + "\n");
+//}
+// Función para escribir
+function escribirLog(contenido) {
+  fs.appendFileSync(logPath, contenido + "\n", { encoding: "utf8" });
+}
+
+// parte de bitacora fin
+
 router.post("/orden", async (req, res) => {
 
+  const fecha = new Date().toISOString();
+  let log = "========================================\n";
+  log += "NUEVA SOLICITUD DE ORDEN\n";
+  log += `Fecha: ${fecha}\n`;
+
+
   try {
+
+    // parte de bitacora inicio   
+    console.log("========================================");
+    console.log("NUEVA SOLICITUD DE ORDEN");
+    console.log("Fecha:", fecha);
+    // parte de bitacora fin
+
     const { id_cliente, id_restaurante, items } = req.body;
 
-    if (!id_cliente || !id_restaurante || !items || items.length === 0) {
+    if (!id_cliente || !id_restaurante || !items || items.length === 0) {      
+      // parte de bitacora inicio
+      console.log("Estado Final: DATOS INCOMPLETOS");
+      console.log("========================================");
+      log += "Estado Final: DATOS INCOMPLETOS\n";
+      log += "========================================\n";
+      escribirLog(log);
+      // parte de bitacora final
       return res.status(400).json({ error: "Datos incompletos" });
     }
 
@@ -18,11 +58,24 @@ router.post("/orden", async (req, res) => {
       precio_cliente: item.precio_cliente || item.precio
     }));
 
+    /*
     console.log("[Order-Service] Enviando a catálogo:", {
       id_restaurante,
       items: itemsTransformados
     });
+    */
+    console.log("[Order-Service] Enviando a catálogo:");
+    console.log("Cliente:", id_cliente);
+    console.log("Restaurante:", id_restaurante);
+    console.log("Items enviados:", JSON.stringify(itemsTransformados));
 
+    log += `Cliente: ${id_cliente}\n`;
+    log += `Restaurante: ${id_restaurante}\n`;
+    log += `Items enviados: ${JSON.stringify(itemsTransformados)}\n`;
+
+     // =============================
+    // LLAMADA gRPC A CATALOG
+    // =============================
     // Convertimos gRPC en Promise para usar async/await limpio
     const response = await new Promise((resolve, reject) => {
       client.ValidateOrder(
@@ -34,7 +87,19 @@ router.post("/orden", async (req, res) => {
       );
     });
 
+  console.log("Resultado Validación gRPC:", response.valido ? "EXITOSA" : "FALLIDA");
+  console.log("Mensaje Validación:", response.mensaje);
+   
+  log += `Resultado Validación gRPC: ${response.valido ? "EXITOSA" : "FALLIDA"}\n`;
+  log += `Mensaje Validación: ${response.mensaje}\n`;
+
+
     if (!response.valido) {
+      console.log("Estado Final: ORDEN RECHAZADA");
+      console.log("========================================");
+      log += "Estado Final: ORDEN RECHAZADA\n";
+      log += "========================================\n";
+      escribirLog(log);
       return res.status(400).json({ error: response.mensaje });
     }
 
@@ -71,6 +136,15 @@ router.post("/orden", async (req, res) => {
 
     console.log("[Order-Service] Orden creada correctamente");
 
+    console.log("Estado Final: ORDEN CREADA");
+    console.log("ID Orden:", id_orden);
+    console.log("========================================");
+
+    log += "Estado Final: ORDEN CREADA\n";
+    log += `ID Orden: ${id_orden}\n`;
+    log += "========================================\n";
+    escribirLog(log);
+
     return res.status(201).json({
       mensaje: "Orden creada correctamente",
       id_orden
@@ -78,6 +152,16 @@ router.post("/orden", async (req, res) => {
 
   } catch (error) {
     console.error("[Order-Service] Error:", error);
+
+    console.error("ERROR INTERNO:", error.message);
+    console.log("Estado Final: ERROR INTERNO");
+    console.log("========================================");
+
+    log += `ERROR INTERNO: ${error.message}\n`;
+    log += "Estado Final: ERROR INTERNO\n";
+    log += "========================================\n";
+    escribirLog(log);
+
     return res.status(500).json({ error: "Error interno del servidor" });
   }
 });
