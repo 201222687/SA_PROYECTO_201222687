@@ -176,3 +176,151 @@ Estado Final: ORDEN CREADA
 ID Orden: 9
 ========================================
 
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-02-13T10:43:35.383Z
+Cliente: 1
+Restaurante: 3
+Items enviados: [{"id_item":1,"cantidad":1,"precio_cliente":80}]
+Resultado Validación gRPC: FALLIDA
+Mensaje Validación: Producto 1 no pertenece al restaurante
+Estado Final: ORDEN RECHAZADA
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-02-13T10:45:30.092Z
+Cliente: 1
+Restaurante: 3
+Items enviados: [{"id_item":13,"cantidad":1,"precio_cliente":50}]
+Resultado Validación gRPC: EXITOSA
+Mensaje Validación: Validación exitosa
+Estado Final: ORDEN CREADA
+ID Orden: 10
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-02-13T11:09:30.578Z
+Cliente: 1
+Restaurante: 4
+Items enviados: [{"id_item":16,"cantidad":2,"precio_cliente":15}]
+Resultado Validación gRPC: EXITOSA
+Mensaje Validación: Validación exitosa
+Estado Final: ORDEN CREADA
+ID Orden: 11
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-02-13T11:11:36.962Z
+Cliente: 1
+Restaurante: 4
+Items enviados: [{"id_item":16,"cantidad":1,"precio_cliente":15},{"id_item":17,"cantidad":1,"precio_cliente":18}]
+Resultado Validación gRPC: EXITOSA
+Mensaje Validación: Validación exitosa
+Estado Final: ORDEN CREADA
+ID Orden: 12
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-02-13T11:12:01.550Z
+Cliente: 1
+Restaurante: 4
+Items enviados: [{"id_item":1,"cantidad":1,"precio_cliente":80},{"id_item":2,"cantidad":1,"precio_cliente":85}]
+Resultado Validación gRPC: FALLIDA
+Mensaje Validación: Producto 1 no pertenece al restaurante
+Estado Final: ORDEN RECHAZADA
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-02-13T11:12:24.828Z
+Cliente: 1
+Restaurante: 4
+Items enviados: [{"id_item":16,"cantidad":1,"precio_cliente":15},{"id_item":25,"cantidad":1,"precio_cliente":40}]
+Resultado Validación gRPC: FALLIDA
+Mensaje Validación: Producto 25 no pertenece al restaurante
+Estado Final: ORDEN RECHAZADA
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-02-13T11:14:17.319Z
+Cliente: 1
+Restaurante: 4
+Items enviados: [{"id_item":16,"cantidad":1,"precio_cliente":18},{"id_item":25,"cantidad":1,"precio_cliente":40}]
+Resultado Validación gRPC: FALLIDA
+Mensaje Validación: Precio incorrecto para producto 16
+Estado Final: ORDEN RECHAZADA
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-02-13T11:15:27.104Z
+Cliente: 1
+Restaurante: 1
+Items enviados: [{"id_item":5,"cantidad":1,"precio_cliente":10}]
+Resultado Validación gRPC: FALLIDA
+Mensaje Validación: Producto 5 no disponible
+Estado Final: ORDEN RECHAZADA
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-02-13T11:15:50.294Z
+Cliente: 1
+Restaurante: 1
+Items enviados: [{"id_item":5,"cantidad":2,"precio_cliente":10}]
+Resultado Validación gRPC: FALLIDA
+Mensaje Validación: Producto 5 no disponible
+Estado Final: ORDEN RECHAZADA
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-02-13T11:16:02.279Z
+Cliente: 1
+Restaurante: 1
+Items enviados: [{"id_item":18,"cantidad":1,"precio_cliente":20}]
+Resultado Validación gRPC: FALLIDA
+Mensaje Validación: Producto 18 no pertenece al restaurante
+Estado Final: ORDEN RECHAZADA
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-02-13T11:29:59.314Z
+Cliente: 29
+Restaurante: 1
+Items enviados: [{"id_item":1,"cantidad":1,"precio_cliente":80},{"id_item":3,"cantidad":1,"precio_cliente":65},{"id_item":2,"cantidad":1,"precio_cliente":85}]
+Resultado Validación gRPC: EXITOSA
+Mensaje Validación: Validación exitosa
+Estado Final: ORDEN CREADA
+ID Orden: 13
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-02-13T11:31:26.584Z
+Cliente: 29
+Restaurante: 1
+Items enviados: [{"id_item":1,"cantidad":1,"precio_cliente":80}]
+Resultado Validación gRPC: EXITOSA
+Mensaje Validación: Validación exitosa
+Estado Final: ORDEN CREADA
+ID Orden: 14
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-02-13T11:32:10.075Z
+Cliente: 29
+Restaurante: 1
+Items enviados: [{"id_item":1,"cantidad":1,"precio_cliente":8}]
+Resultado Validación gRPC: FALLIDA
+Mensaje Validación: Precio incorrecto para producto 1
+Estado Final: ORDEN RECHAZADA
+========================================
+

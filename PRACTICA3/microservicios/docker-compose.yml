@@ -1,4 +1,4 @@
-version: "3.9"
+#version: "3.9"
 
 services:
   # ================================
@@ -14,6 +14,7 @@ services:
       - GRPC_AUTH_HOST=auth-service:50051
       - ORDER_SERVICE_HOST=order-service:3002
       - JWT_SECRET=delivereats_secret_super_seguro
+      - CATALOG_HOST=catalog-service:50052
     volumes:
       - ./proto:/proto      
     depends_on:

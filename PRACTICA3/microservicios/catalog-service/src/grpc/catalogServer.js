@@ -82,6 +82,58 @@ async function ValidateOrder(call, callback) {
   }
 }
 
+
+
+// =============================
+// OBTENER RESTAURANTES
+// =============================
+async function GetRestaurants(call, callback) {
+  try {
+
+    const [rows] = await pool.query("SELECT * FROM restaurantes");
+
+    return callback(null, {
+      restaurants: rows
+    });
+
+  } catch (error) {
+
+    console.error("[Catalog-Service] Error obteniendo restaurantes:", error);
+
+    return callback({
+      code: grpc.status.INTERNAL,
+      message: "Error obteniendo restaurantes"
+    });
+  }
+}
+
+// =============================
+// OBTENER MENU ITEMS
+// =============================
+async function GetMenuItems(call, callback) {
+
+  console.log("[Catalog-Service] Solicitud de menú");
+  
+  try {
+
+    const [rows] = await pool.query("SELECT * FROM menu_items");
+
+    return callback(null, {
+      menuItems: rows
+    });
+
+  } catch (error) {
+
+    console.error("[Catalog-Service] Error obteniendo menu items:", error);
+
+    return callback({
+      code: grpc.status.INTERNAL,
+      message: "Error obteniendo menu items"
+    });
+  }
+}
+
+
 // =============================
 // FUNCIÓN PARA CREAR SERVIDOR
 // =============================
@@ -90,14 +142,16 @@ function startCatalogServer() {
   const server = new grpc.Server();
 
   server.addService(catalogProto.CatalogService.service, {
-    ValidateOrder
+    ValidateOrder,
+    GetRestaurants,
+    GetMenuItems
   });
 
   server.bindAsync(
     "0.0.0.0:50052",
     grpc.ServerCredentials.createInsecure(),
     () => {
-      console.log("✅ Catalog-Service gRPC corriendo en puerto 50052");
+      console.log("Catalog-Service gRPC corriendo en puerto 50052");
       server.start();
     }
   );

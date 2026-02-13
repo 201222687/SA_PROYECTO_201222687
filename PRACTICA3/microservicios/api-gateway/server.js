@@ -4,6 +4,7 @@ const cors = require('cors');
 const fetch = require('node-fetch');
 const authRoutes = require('./src/routes/auth.routes');
 const orderRoutes = require('./src/routes/order.routes'); // order-service
+const catalogRoutes = require("./src/routes/catalog.routes"); // catalog-service
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(express.json());
 // Rutas
 app.use('/auth', authRoutes);
 app.use('/orden', orderRoutes);
+app.use("/catalog", catalogRoutes);
 
 const PORT = process.env.PORT || 5000;
 

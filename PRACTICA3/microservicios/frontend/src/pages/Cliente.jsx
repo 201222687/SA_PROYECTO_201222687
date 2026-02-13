@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { registerCliente } from '../api/auth.api';
 import { createOrder } from '../api/order.api';
 import LogoutButton from '../components/LogoutButton';
@@ -46,22 +46,75 @@ function Cliente() {
   // =========================
   // CREAR ORDEN
   // =========================
-  const [idRestaurante, setIdRestaurante] = useState('');
+  const [restaurants, setRestaurants] = useState([]);
+  const [menuItems, setMenuItems] = useState([]);
+  const [selectedRestaurant, setSelectedRestaurant] = useState('');
   const [items, setItems] = useState([]);
   const [mensajeOrden, setMensajeOrden] = useState('');
 
-  const agregarItem = () => {
-    setItems([
-      ...items,
-      { id_item: '', cantidad: '', precio_cliente: '' }
-    ]);
+
+    // Cargar restaurantes y todos los productos al iniciar
+  useEffect(() => {
+
+    fetch('http://localhost:5000/catalog/restaurants')
+      .then(res => res.json())
+      .then(data => setRestaurants(data.restaurants || []))
+      .catch(err => console.error(err));
+
+    fetch('http://localhost:5000/catalog/menu-items')
+      .then(res => res.json())
+      .then(data => setMenuItems(data.menuItems || []))
+      .catch(err => console.error(err));
+
+  }, []);
+
+//  Agregar producto
+  const agregarProducto = (producto) => {
+    const existe = items.find(i => i.id_item === producto.id_item);
+
+    if (existe) {
+      setItems(items.map(i =>
+        i.id_item === producto.id_item
+          ? { ...i, cantidad: i.cantidad + 1 }
+          : i
+      ));
+    } else {
+      setItems([
+        ...items,
+        {
+          id_item: producto.id_item,
+          nombre: producto.nombre,
+          cantidad: 1,
+          precio_cliente: producto.precio
+        }
+      ]);
+    }
   };
 
-  const handleItemChange = (index, field, value) => {
-    const nuevosItems = [...items];
-    nuevosItems[index][field] = value;
-    setItems(nuevosItems);
+    //  Eliminar producto
+  const eliminarItem = (id_item) => {
+    setItems(items.filter(item => item.id_item !== id_item));
   };
+
+   
+  // Editar producto
+  const actualizarItem = (id_item, campo, valor) => {
+
+    if (campo === 'cantidad' && valor < 1) return;
+
+    setItems(items.map(item =>
+      item.id_item === id_item
+        ? { ...item, [campo]: valor }
+        : item
+    ));
+  };
+
+  // Total general
+  const totalGeneral = items.reduce(
+    (acc, item) => acc + (item.cantidad * item.precio_cliente),
+    0
+  );
+
 
   const handleCreateOrder = async (e) => {
     e.preventDefault();
@@ -70,11 +123,15 @@ function Cliente() {
     try {
 
       const data = {
-        id_restaurante: parseInt(idRestaurante),
+        id_restaurante: parseInt(selectedRestaurant),
         items: items.map(item => ({
-          id_item: parseInt(item.id_item),
-          cantidad: parseInt(item.cantidad),
-          precio_cliente: parseFloat(item.precio_cliente)
+          //id_item: parseInt(item.id_item),
+          //cantidad: parseInt(item.cantidad),
+          //precio_cliente: parseFloat(item.precio_cliente)
+          id_item: item.id_item,
+          cantidad: item.cantidad,
+          precio_cliente: item.precio_cliente
+
         }))
       };
 
@@ -83,7 +140,8 @@ function Cliente() {
       setMensajeOrden(response.data.mensaje || 'Orden creada correctamente');
 
       // limpiar formulario
-      setIdRestaurante('');
+      //setIdRestaurante('');
+      setSelectedRestaurant('');
       setItems([]);
 
     } catch (error) {
@@ -139,64 +197,133 @@ function Cliente() {
 
       {/* ========================= CREAR ORDEN ========================= */}
 
+      
       <h3>Crear Orden</h3>
 
       <form onSubmit={handleCreateOrder}>
 
-        <input
-          type="number"
-          placeholder="ID Restaurante"
-          value={idRestaurante}
-          onChange={e => setIdRestaurante(e.target.value)}
+        {/* Restaurantes */}
+        <select
+          value={selectedRestaurant}
+          onChange={(e) => setSelectedRestaurant(e.target.value)}
           required
-        /><br /><br />
-
-        {items.map((item, index) => (
-          <div key={index}>
-            <input
-              type="number"
-              placeholder="ID Producto"
-              value={item.id_item}
-              onChange={(e) =>
-                handleItemChange(index, 'id_item', e.target.value)
-              }
-              required
-            />
-
-            <input
-              type="number"
-              placeholder="Cantidad"
-              value={item.cantidad}
-              onChange={(e) =>
-                handleItemChange(index, 'cantidad', e.target.value)
-              }
-              required
-            />
-
-            <input
-              type="number"
-              step="0.01"
-              placeholder="Precio Cliente"
-              value={item.precio_cliente}
-              onChange={(e) =>
-                handleItemChange(index, 'precio_cliente', e.target.value)
-              }
-              required
-            />
-
-            <br /><br />
-          </div>
-        ))}
-
-        <button type="button" onClick={agregarItem}>
-          Agregar Producto
-        </button>
+        >
+          <option value="">Seleccione Restaurante</option>
+          {restaurants.map(r => (
+            <option key={r.id_restaurante} value={r.id_restaurante}>
+              {r.nombre}
+            </option>
+          ))}
+        </select>
 
         <br /><br />
 
-        <button type="submit">
-          Crear Orden
-        </button>
+        {/* TODOS los productos del sistema */}
+        <h4>Productos Disponibles</h4>
+
+        {menuItems.map(producto => (
+          <div key={producto.id_item} style={{ marginBottom: 8 }}>
+            {producto.nombre} - Q{producto.precio}
+
+            <button
+              type="button"
+              onClick={() => agregarProducto(producto)}
+              style={{ marginLeft: 10 }}
+            >
+              Agregar
+            </button>
+          </div>
+        ))}
+
+        <hr />
+
+
+{/* Carrito Editable */}
+        <h4>Orden Actual</h4>
+
+        {items.length === 0 && <p>No hay productos agregados</p>}
+
+        {items.map(item => {
+
+          const subtotal = item.cantidad * item.precio_cliente;
+
+          return (
+            <div
+              key={item.id_item}
+              style={{
+                marginBottom: 12,
+                padding: 10,
+                border: '1px solid #ccc',
+                borderRadius: 6
+              }}
+            >
+              <strong>{item.nombre}</strong>
+
+              <div style={{ marginTop: 6 }}>
+                Cantidad:
+                <input
+                  type="number"
+                  min="1"
+                  value={item.cantidad}
+                  onChange={(e) =>
+                    actualizarItem(
+                      item.id_item,
+                      'cantidad',
+                      parseInt(e.target.value)
+                    )
+                  }
+                  style={{ width: 70, marginLeft: 5 }}
+                />
+
+                Precio:
+                <input
+                  type="number"
+                  step="0.01"
+                  value={item.precio_cliente}
+                  onChange={(e) =>
+                    actualizarItem(
+                      item.id_item,
+                      'precio_cliente',
+                      parseFloat(e.target.value)
+                    )
+                  }
+                  style={{ width: 90, marginLeft: 5 }}
+                />
+              </div>
+
+              <div style={{ marginTop: 6 }}>
+                Subtotal: <strong>Q{subtotal.toFixed(2)}</strong>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => eliminarItem(item.id_item)}
+                style={{
+                  marginTop: 6,
+                  backgroundColor: 'red',
+                  color: 'white',
+                  border: 'none',
+                  padding: '4px 8px',
+                  cursor: 'pointer'
+                }}
+              >
+                Eliminar
+              </button>
+            </div>
+          );
+        })}
+
+        <hr />
+
+        {items.length > 0 && (
+          <>
+            <h3>Total General: Q{totalGeneral.toFixed(2)}</h3>
+            <button type="submit">
+              Crear Orden
+            </button>
+          </>
+        )}
+        
 
       </form>
 
@@ -204,7 +331,7 @@ function Cliente() {
         <p style={{ marginTop: 20, fontWeight: 'bold' }}>
           {mensajeOrden}
         </p>
-      )}
+      )}   
 
       <br />
       <LogoutButton />
