@@ -1,0 +1,86 @@
+#version: "3.9"
+
+services:
+  # ================================
+  # API GATEWAY
+  # ================================
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - GRPC_AUTH_HOST=auth-service:50051
+      - ORDER_SERVICE_HOST=order-service:3002
+      - JWT_SECRET=delivereats_secret_super_seguro
+      - CATALOG_HOST=catalog-service:50052
+    volumes:
+      - ./proto:/proto      
+    depends_on:
+      - auth-service
+      - order-service
+  # ================================
+    # AUTH SERVICE (gRPC)
+  # ================================
+  auth-service:
+   
+    build: ./auth-service
+    container_name: auth-service
+    ports:
+      - "50051:50051"
+    volumes:
+      - ./proto:/proto
+    environment:
+    - DB_HOST=host.docker.internal
+    - DB_USER=root
+    - DB_PASSWORD=Yareli2026.
+    - DB_NAME=auth_db
+    - DB_PORT=3306
+    - JWT_SECRET=delivereats_secret_super_seguro
+  # ================================
+  # CATALOG SERVICE (gRPC)
+  # ================================
+  catalog-service:
+    build: ./catalog-service
+    container_name: catalog-service
+    ports:
+      - "50052:50052"
+    volumes:
+      - ./proto:/proto
+    environment:
+      - DB_HOST=host.docker.internal
+      - DB_USER=root
+      - DB_PASSWORD=Yareli2026.
+      - DB_NAME=catalog_db
+      - DB_PORT=3306
+  # ================================
+  # ORDER SERVICE (REST + gRPC CLIENT)
+  # ================================
+  order-service:
+    build: ./order-service
+    container_name: order-service
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./proto:/proto
+      - ./order-service:/app
+    environment:
+      - DB_HOST=host.docker.internal
+      - DB_USER=root
+      - DB_PASSWORD=Yareli2026.
+      - DB_NAME=order_db
+      - DB_PORT=3306
+      - CATALOG_HOST=catalog-service:50052
+    depends_on:
+      - catalog-service
+  # ================================
+  # FRONTEND
+  # ================================
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api-gateway
