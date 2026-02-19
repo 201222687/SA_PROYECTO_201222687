@@ -38,6 +38,8 @@ services:
     - DB_NAME=auth_db
     - DB_PORT=3306
     - JWT_SECRET=delivereats_secret_super_seguro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   # ================================
   # CATALOG SERVICE (gRPC)
   # ================================
@@ -54,6 +56,8 @@ services:
       - DB_PASSWORD=Yareli2026.
       - DB_NAME=catalog_db
       - DB_PORT=3306
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   # ================================
   # ORDER SERVICE (REST + gRPC CLIENT)
   # ================================
@@ -74,6 +78,8 @@ services:
       - CATALOG_HOST=catalog-service:50052
     depends_on:
       - catalog-service
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   # ================================
   # FRONTEND
   # ================================

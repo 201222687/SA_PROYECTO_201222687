@@ -1,6 +1,7 @@
 import axios from "axios";
+import { API } from "./api";
 
-const API = "http://localhost:5000"; // API Gateway
+// API Gateway
 
 export const createOrder = async (data) => {
 
