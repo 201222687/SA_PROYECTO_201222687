@@ -133,6 +133,150 @@ async function GetMenuItems(call, callback) {
   }
 }
 
+// =============================
+// OBTENER MENU ITEMS POR RESTAURANTE
+// =============================
+async function GetMenuItemsByRestaurant(call, callback) {
+
+  const { id_restaurante } = call.request;
+
+  console.log("[Catalog-Service] Menú solicitado para restaurante:", id_restaurante);
+
+  try {
+
+    const [rows] = await pool.query(
+      `SELECT * FROM menu_items 
+       WHERE id_restaurante = ?`,
+      [id_restaurante]
+    );
+
+    return callback(null, {
+      menuItems: rows
+    });
+
+  } catch (error) {
+
+    console.error("[Catalog-Service] Error obteniendo menú por restaurante:", error);
+
+    return callback({
+      code: grpc.status.INTERNAL,
+      message: "Error obteniendo menu items por restaurante"
+    });
+  }
+}
+
+// =============================
+// CREAR RESTAURANTE
+// =============================
+async function CreateRestaurant(call, callback) {
+
+  const { nombre, direccion, activo } = call.request;
+
+  try {
+
+    if (!nombre) {
+      return callback({
+        code: grpc.status.INVALID_ARGUMENT,
+        message: "El nombre es obligatorio"
+      });
+    }
+
+    await pool.query(
+      `INSERT INTO restaurantes (nombre, direccion, activo)
+       VALUES (?, ?, ?)`,
+      [nombre, direccion || null, activo]
+    );
+
+    return callback(null, {
+      mensaje: "Restaurante creado correctamente"
+    });
+
+  } catch (error) {
+
+    console.error("[Catalog-Service] Error creando restaurante:", error);
+
+    return callback({
+      code: grpc.status.INTERNAL,
+      message: "Error creando restaurante"
+    });
+  }
+}
+
+
+// =============================
+// ACTUALIZAR RESTAURANTE
+// =============================
+async function UpdateRestaurant(call, callback) {
+
+  const { id_restaurante, nombre, direccion, activo } = call.request;
+
+  try {
+
+    const [result] = await pool.query(
+      `UPDATE restaurantes
+       SET nombre = ?, direccion = ?, activo = ?
+       WHERE id_restaurante = ?`,
+      [nombre, direccion || null, activo, id_restaurante]
+    );
+
+    if (result.affectedRows === 0) {
+      return callback({
+        code: grpc.status.NOT_FOUND,
+        message: "Restaurante no encontrado"
+      });
+    }
+
+    return callback(null, {
+      mensaje: "Restaurante actualizado correctamente"
+    });
+
+  } catch (error) {
+
+    console.error("[Catalog-Service] Error actualizando restaurante:", error);
+
+    return callback({
+      code: grpc.status.INTERNAL,
+      message: "Error actualizando restaurante"
+    });
+  }
+}
+
+// =============================
+// ELIMINAR RESTAURANTE
+// =============================
+async function DeleteRestaurant(call, callback) {
+
+  const { id_restaurante } = call.request;
+
+  try {
+
+    const [result] = await pool.query(
+      `DELETE FROM restaurantes WHERE id_restaurante = ?`,
+      [id_restaurante]
+    );
+
+    if (result.affectedRows === 0) {
+      return callback({
+        code: grpc.status.NOT_FOUND,
+        message: "Restaurante no encontrado"
+      });
+    }
+
+    return callback(null, {
+      mensaje: "Restaurante eliminado correctamente"
+    });
+
+  } catch (error) {
+
+    console.error("[Catalog-Service] Error eliminando restaurante:", error);
+
+    return callback({
+      code: grpc.status.INTERNAL,
+      message: "Error eliminando restaurante"
+    });
+  }
+}
+
 
 // =============================
 // FUNCIÓN PARA CREAR SERVIDOR
@@ -144,7 +288,11 @@ function startCatalogServer() {
   server.addService(catalogProto.CatalogService.service, {
     ValidateOrder,
     GetRestaurants,
-    GetMenuItems
+    GetMenuItems,
+    GetMenuItemsByRestaurant,
+    CreateRestaurant,
+    UpdateRestaurant,
+    DeleteRestaurant
   });
 
   server.bindAsync(

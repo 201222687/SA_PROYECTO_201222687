@@ -2,17 +2,36 @@ syntax = "proto3";
 
 package catalog;
 
+// ===================================
+// SERVICIO DEL CATÁLOGO
+// ===================================
 // Servicio que expone el microservicio de catálogo
+
 service CatalogService {
 
   // Método que el Order-Service llamará antes de guardar la orden
   rpc ValidateOrder (ValidationRequest) returns (ValidationResponse);
 
+  
+  // consultas 
   rpc GetRestaurants (Empty) returns (RestaurantsResponse);
-
   rpc GetMenuItems (Empty) returns (MenuItemsResponse);
+  //  Obtener productos por restaurante
+  rpc GetMenuItemsByRestaurant (RestaurantRequest) returns (MenuItemsResponse);
 
+  // ===============================
+  // CRUD RESTAURANTES (NUEVO)
+  // ===============================
+
+  rpc CreateRestaurant (CreateRestaurantRequest) returns (RestaurantActionResponse);
+  rpc UpdateRestaurant (UpdateRestaurantRequest) returns (RestaurantActionResponse);
+  rpc DeleteRestaurant (DeleteRestaurantRequest) returns (RestaurantActionResponse);
 }
+
+
+// ===================================
+// MODELOS DE VALIDACIÓN DE ORDEN
+// ===================================
 
 // Representa un item que el cliente quiere comprar
 message OrderItem {
@@ -41,6 +60,11 @@ message ValidationResponse {
 // Mensaje vacío para consultas simples
 message Empty {}
 
+// Mensaje para pedir menú por restaurante
+message RestaurantRequest {
+  int32 id_restaurante = 1;
+}
+
 // Respuesta con lista de restaurantes
 message RestaurantsResponse {
   repeated Restaurant restaurants = 1;
@@ -51,11 +75,42 @@ message MenuItemsResponse {
   repeated MenuItem menuItems = 1;
 }
 
+
+// ===================================
+// CRUD RESTAURANTES (NUEVO)
+// ===================================
+
+message CreateRestaurantRequest {
+  string nombre = 1;
+  string direccion = 2;
+  bool activo = 3;
+}
+
+message UpdateRestaurantRequest {
+  int32 id_restaurante = 1;
+  string nombre = 2;
+  string direccion = 3;
+  bool activo = 4;
+}
+
+message DeleteRestaurantRequest {
+  int32 id_restaurante = 1;
+}
+
+message RestaurantActionResponse {
+  string mensaje = 1;
+}
+
+// ===================================
+// MODELOS DE DATOS
+// ===================================
+
 // Modelo de restaurante
 message Restaurant {
   int32 id_restaurante = 1;
   string nombre = 2;
   string direccion = 3;
+   bool activo = 4;
 }
 
 // Modelo de producto del menú

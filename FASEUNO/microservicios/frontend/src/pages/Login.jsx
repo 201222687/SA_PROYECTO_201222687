@@ -28,9 +28,14 @@ function Login() {
         navigate('/admin');
       } else if (decoded.rol === 'CLIENTE') {
         navigate('/cliente');
+      }  else if (decoded.rol === 'REPARTIDOR') {
+        navigate('/repartidor');
+      } else if (decoded.rol === 'RESTAURANTE') {
+        navigate('/restaurante');
       } else {
         alert('Rol desconocido');
       }
+
     } catch (err) {
       const data = err.response?.data;
 
@@ -84,6 +89,16 @@ function Login() {
 
         <button type="submit">Ingresar</button>
       </form>
+
+
+      {/*  BOTÓN REGISTRARSE */}
+      <button
+        type="button"
+        onClick={() => navigate('/registrar')}
+      >
+        Registrarse
+      </button>
+
     </div>
   );
 }

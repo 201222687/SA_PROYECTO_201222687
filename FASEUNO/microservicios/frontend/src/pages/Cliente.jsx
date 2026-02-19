@@ -1,84 +1,111 @@
+// =========================
+// IMPORTACIONES
+// =========================
+
+// useState → para manejar estados (variables dinámicas del componente)
+// useEffect → para ejecutar lógica cuando el componente se carga o cambia algo
 import { useState, useEffect } from 'react';
-import { registerCliente } from '../api/auth.api';
+
+// Función que llama al backend para crear la orden
 import { createOrder } from '../api/order.api';
+
+// Componente que cierra sesión (borra token y redirige)
 import LogoutButton from '../components/LogoutButton';
+
 
 function Cliente() {
 
   // =========================
-  // REGISTRO
+  // ESTADOS (MEMORIA DEL COMPONENTE)
   // =========================
-  const [nombre, setNombre] = useState('');
-  const [correo, setCorreo] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setError('');
-
-    try {
-      await registerCliente({ nombre, correo, password });
-
-      alert('Cliente registrado correctamente.');
-      setNombre('');
-      setCorreo('');
-      setPassword('');
-
-    } catch (err) {
-
-      const data = err.response?.data;
-
-      if (data?.code === 6) {
-        setError('El correo ya está registrado.');
-        return;
-      }
-
-      if (data?.code === 3) {
-        setError('Faltan datos obligatorios.');
-        return;
-      }
-
-      setError(data?.error || 'Error al registrar cliente');
-    }
-  };
-
-  // =========================
-  // CREAR ORDEN
-  // =========================
+  // Lista de restaurantes obtenidos del backend
   const [restaurants, setRestaurants] = useState([]);
+
+  // Lista de productos del restaurante seleccionado
   const [menuItems, setMenuItems] = useState([]);
+
+  // Restaurante seleccionado en el <select>
   const [selectedRestaurant, setSelectedRestaurant] = useState('');
+
+  // Productos agregados al carrito
   const [items, setItems] = useState([]);
+
+  // Mensaje de respuesta cuando se crea la orden
   const [mensajeOrden, setMensajeOrden] = useState('');
 
 
-    // Cargar restaurantes y todos los productos al iniciar
+  // =========================
+  // CARGAR RESTAURANTES AL INICIAR
+  // =========================
+  // Este useEffect se ejecuta UNA sola vez
+  // porque el arreglo de dependencias está vacío []
   useEffect(() => {
 
+    // Hace petición al API Gateway
     fetch('http://localhost:5000/catalog/restaurants')
-      .then(res => res.json())
-      .then(data => setRestaurants(data.restaurants || []))
-      .catch(err => console.error(err));
 
-    fetch('http://localhost:5000/catalog/menu-items')
+      // Convierte respuesta a JSON
       .then(res => res.json())
-      .then(data => setMenuItems(data.menuItems || []))
+
+      // Guarda restaurantes en el estado
+      .then(data => setRestaurants(data.restaurants || []))
+
+      // Si ocurre error lo muestra en consola
       .catch(err => console.error(err));
 
   }, []);
 
-//  Agregar producto
+
+  // =========================
+  // CARGAR PRODUCTOS SEGÚN RESTAURANTE
+  // =========================
+  // Este useEffect se ejecuta
+  // cada vez que cambia selectedRestaurant
+  useEffect(() => {
+
+    // Si no hay restaurante seleccionado
+    if (!selectedRestaurant) {
+      setMenuItems([]); // limpiar productos
+      return;
+    }
+
+    // Llama al endpoint filtrado por restaurante
+    fetch(`http://localhost:5000/catalog/menu-items/${selectedRestaurant}`)
+      .then(res => res.json())
+      .then(data => {
+
+        // Guarda productos del restaurante
+        setMenuItems(data.menuItems || []);
+
+        // Limpia carrito si cambia restaurante
+        setItems([]);
+      })
+      .catch(err => console.error(err));
+
+  }, [selectedRestaurant]); // depende de selectedRestaurant
+
+
+  // =========================
+  // AGREGAR PRODUCTO AL CARRITO
+  // =========================
   const agregarProducto = (producto) => {
+
+    // Verifica si el producto ya está en el carrito
     const existe = items.find(i => i.id_item === producto.id_item);
 
     if (existe) {
+
+      // Si ya existe → solo aumenta cantidad
       setItems(items.map(i =>
         i.id_item === producto.id_item
           ? { ...i, cantidad: i.cantidad + 1 }
           : i
       ));
+
     } else {
+
+      // Si no existe → lo agrega al carrito
       setItems([
         ...items,
         {
@@ -91,17 +118,26 @@ function Cliente() {
     }
   };
 
-    //  Eliminar producto
+
+  // =========================
+  // ELIMINAR PRODUCTO DEL CARRITO
+  // =========================
   const eliminarItem = (id_item) => {
+
+    // Filtra y elimina el producto seleccionado
     setItems(items.filter(item => item.id_item !== id_item));
   };
 
-   
-  // Editar producto
+
+  // =========================
+  // EDITAR CANTIDAD O PRECIO
+  // =========================
   const actualizarItem = (id_item, campo, valor) => {
 
+    // No permitir cantidad menor a 1
     if (campo === 'cantidad' && valor < 1) return;
 
+    // Actualiza dinámicamente el campo modificado
     setItems(items.map(item =>
       item.id_item === id_item
         ? { ...item, [campo]: valor }
@@ -109,106 +145,78 @@ function Cliente() {
     ));
   };
 
-  // Total general
+
+  // =========================
+  // CALCULAR TOTAL GENERAL
+  // =========================
+  // reduce → recorre el carrito y suma subtotales
   const totalGeneral = items.reduce(
     (acc, item) => acc + (item.cantidad * item.precio_cliente),
     0
   );
 
 
+  // =========================
+  // CREAR ORDEN
+  // =========================
   const handleCreateOrder = async (e) => {
-    e.preventDefault();
+
+    e.preventDefault(); // evita recargar página
     setMensajeOrden('');
 
     try {
 
+      // Estructura que se enviará al backend
       const data = {
         id_restaurante: parseInt(selectedRestaurant),
         items: items.map(item => ({
-          //id_item: parseInt(item.id_item),
-          //cantidad: parseInt(item.cantidad),
-          //precio_cliente: parseFloat(item.precio_cliente)
           id_item: item.id_item,
           cantidad: item.cantidad,
           precio_cliente: item.precio_cliente
-
         }))
       };
 
+      // Llamada al API
       const response = await createOrder(data);
 
+      // Mostrar mensaje de éxito
       setMensajeOrden(response.data.mensaje || 'Orden creada correctamente');
 
-      // limpiar formulario
-      //setIdRestaurante('');
+      // Limpiar datos después de crear orden
       setSelectedRestaurant('');
       setItems([]);
 
     } catch (error) {
+
+      // Mostrar error si ocurre
       setMensajeOrden(
         error.response?.data?.error || 'Error al crear orden'
       );
     }
   };
 
+
+  // =========================
+  // INTERFAZ (HTML + JSX)
+  // =========================
   return (
     <div style={{ padding: 40 }}>
 
       <h1>Módulo Cliente</h1>
 
-      {/* ========================= REGISTRO ========================= */}
-
-      <h3>Registrar nuevo cliente</h3>
-
-      {error && (
-        <p style={{ color: 'red' }}>{error}</p>
-      )}
-
-      <form onSubmit={handleRegister}>
-        <input
-          placeholder="Nombre"
-          value={nombre}
-          onChange={e => setNombre(e.target.value)}
-          required
-        /><br /><br />
-
-        <input
-          type="email"
-          placeholder="Correo"
-          value={correo}
-          onChange={e => setCorreo(e.target.value)}
-          required
-        /><br /><br />
-
-        <input
-          type="password"
-          placeholder="Contraseña"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
-        /><br /><br />
-
-        <button type="submit">
-          Registrar Cliente
-        </button>
-      </form>
-
-      <hr style={{ margin: "40px 0" }} />
-
-      {/* ========================= CREAR ORDEN ========================= */}
-
-      
       <h3>Crear Orden</h3>
 
       <form onSubmit={handleCreateOrder}>
 
-        {/* Restaurantes */}
+        {/* SELECT DE RESTAURANTES */}
         <select
           value={selectedRestaurant}
           onChange={(e) => setSelectedRestaurant(e.target.value)}
           required
         >
           <option value="">Seleccione Restaurante</option>
+
+          {/* Render dinámico de restaurantes */}
           {restaurants.map(r => (
             <option key={r.id_restaurante} value={r.id_restaurante}>
               {r.nombre}
@@ -218,27 +226,32 @@ function Cliente() {
 
         <br /><br />
 
-        {/* TODOS los productos del sistema */}
-        <h4>Productos Disponibles</h4>
+        {/* PRODUCTOS SOLO SI HAY RESTAURANTE */}
+        {selectedRestaurant && (
+          <>
+            <h4>Productos Disponibles</h4>
 
-        {menuItems.map(producto => (
-          <div key={producto.id_item} style={{ marginBottom: 8 }}>
-            {producto.nombre} - Q{producto.precio}
+            {menuItems.length === 0 && <p>No hay productos disponibles</p>}
 
-            <button
-              type="button"
-              onClick={() => agregarProducto(producto)}
-              style={{ marginLeft: 10 }}
-            >
-              Agregar
-            </button>
-          </div>
-        ))}
+            {menuItems.map(producto => (
+              <div key={producto.id_item} style={{ marginBottom: 8 }}>
+                {producto.nombre} - Q{producto.precio}
 
-        <hr />
+                <button
+                  type="button"
+                  onClick={() => agregarProducto(producto)}
+                  style={{ marginLeft: 10 }}
+                >
+                  Agregar
+                </button>
+              </div>
+            ))}
 
+            <hr />
+          </>
+        )}
 
-{/* Carrito Editable */}
+        {/* CARRITO */}
         <h4>Orden Actual</h4>
 
         {items.length === 0 && <p>No hay productos agregados</p>}
@@ -248,18 +261,10 @@ function Cliente() {
           const subtotal = item.cantidad * item.precio_cliente;
 
           return (
-            <div
-              key={item.id_item}
-              style={{
-                marginBottom: 12,
-                padding: 10,
-                border: '1px solid #ccc',
-                borderRadius: 6
-              }}
-            >
+            <div key={item.id_item}>
               <strong>{item.nombre}</strong>
 
-              <div style={{ marginTop: 6 }}>
+              <div>
                 Cantidad:
                 <input
                   type="number"
@@ -272,7 +277,6 @@ function Cliente() {
                       parseInt(e.target.value)
                     )
                   }
-                  style={{ width: 70, marginLeft: 5 }}
                 />
 
                 Precio:
@@ -287,25 +291,16 @@ function Cliente() {
                       parseFloat(e.target.value)
                     )
                   }
-                  style={{ width: 90, marginLeft: 5 }}
                 />
               </div>
 
-              <div style={{ marginTop: 6 }}>
-                Subtotal: <strong>Q{subtotal.toFixed(2)}</strong>
+              <div>
+                Subtotal: Q{subtotal.toFixed(2)}
               </div>
 
               <button
                 type="button"
                 onClick={() => eliminarItem(item.id_item)}
-                style={{
-                  marginTop: 6,
-                  backgroundColor: 'red',
-                  color: 'white',
-                  border: 'none',
-                  padding: '4px 8px',
-                  cursor: 'pointer'
-                }}
               >
                 Eliminar
               </button>
@@ -315,6 +310,7 @@ function Cliente() {
 
         <hr />
 
+        {/* TOTAL Y BOTÓN SOLO SI HAY PRODUCTOS */}
         {items.length > 0 && (
           <>
             <h3>Total General: Q{totalGeneral.toFixed(2)}</h3>
@@ -323,15 +319,15 @@ function Cliente() {
             </button>
           </>
         )}
-        
 
       </form>
 
+      {/* MENSAJE DEL BACKEND */}
       {mensajeOrden && (
-        <p style={{ marginTop: 20, fontWeight: 'bold' }}>
+        <p>
           {mensajeOrden}
         </p>
-      )}   
+      )}
 
       <br />
       <LogoutButton />

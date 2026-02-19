@@ -3,6 +3,9 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Cliente from './pages/Cliente';
 import Admin from './pages/Admin';
+import RegistrarCliente from './pages/RegistrarCliente';
+import Repartidorjsx from './pages/Repartidor';
+import Restaurantejsx from './pages/Restaurante';
 import { jwtDecode } from 'jwt-decode';
 
 function App() {
@@ -30,6 +33,19 @@ function App() {
         path="/admin"
         element={rol === 'ADMIN' ? <Admin /> : <Navigate to="/login" />}
       />
+      
+      <Route
+        path="/repartidor"
+        element={rol === 'REPARTIDOR' ? <Repartidorjsx /> : <Navigate to="/login" />}
+      />
+      <Route
+        path="/restaurante"
+        element={rol === 'RESTAURANTE' ? <Restaurantejsx /> : <Navigate to="/login" />}
+      />
+      
+      
+      <Route path="/registrar" element={<RegistrarCliente />} />
+    
       <Route path="*" element={<h2>Página no encontrada</h2>} />
     </Routes>
   );
