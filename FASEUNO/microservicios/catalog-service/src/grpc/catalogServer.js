@@ -277,6 +277,152 @@ async function DeleteRestaurant(call, callback) {
   }
 }
 
+async function CreateMenuItem(call, callback) {
+
+  const { id_restaurante, nombre, precio, disponible } = call.request;
+
+  try {
+
+    await pool.query(
+      `INSERT INTO menu_items 
+       (id_restaurante, nombre, precio, disponible)
+       VALUES (?, ?, ?, ?)`,
+      [id_restaurante, nombre, precio, disponible]
+    );
+
+    return callback(null, {
+      mensaje: "Item creado correctamente"
+    });
+
+  } catch (error) {
+    console.error(error);
+    return callback({
+      code: grpc.status.INTERNAL,
+      message: "Error creando item"
+    });
+  }
+}
+
+async function UpdateMenuItem(call, callback) {
+
+  const { id_item, nombre, precio, disponible } = call.request;
+
+  try {
+
+    const [result] = await pool.query(
+      `UPDATE menu_items
+       SET nombre = ?, precio = ?, disponible = ?
+       WHERE id_item = ?`,
+      [nombre, precio, disponible, id_item]
+    );
+
+    if (result.affectedRows === 0) {
+      return callback({
+        code: grpc.status.NOT_FOUND,
+        message: "Item no encontrado"
+      });
+    }
+
+    return callback(null, {
+      mensaje: "Item actualizado correctamente"
+    });
+
+  } catch (error) {
+    console.error(error);
+    return callback({
+      code: grpc.status.INTERNAL,
+      message: "Error actualizando item"
+    });
+  }
+}
+
+
+async function DeleteMenuItem(call, callback) {
+
+  const { id_item } = call.request;
+
+  try {
+
+    const [result] = await pool.query(
+      `DELETE FROM menu_items WHERE id_item = ?`,
+      [id_item]
+    );
+
+    if (result.affectedRows === 0) {
+      return callback({
+        code: grpc.status.NOT_FOUND,
+        message: "Item no encontrado"
+      });
+    }
+
+    return callback(null, {
+      mensaje: "Item eliminado correctamente"
+    });
+
+  } catch (error) {
+    console.error(error);
+    return callback({
+      code: grpc.status.INTERNAL,
+      message: "Error eliminando item"
+    });
+  }
+}
+
+// =============================
+// OBTENER NOMBRE RESTAURANTE Y PRODUCTOS
+// =============================
+
+
+async function GetOrderDetails(call, callback) {
+
+  const { id_restaurante, id_items } = call.request;
+
+  try {
+
+    // 🔹 Restaurante
+    const [restaurantRows] = await pool.query(
+      `SELECT * FROM restaurantes WHERE id_restaurante = ?`,
+      [id_restaurante]
+    );
+
+    if (restaurantRows.length === 0) {
+      return callback(null, {
+        restaurant: null,
+        items: []
+      });
+    }
+
+    // 🔹 Productos
+    const items = [];
+
+    for (const id_item of id_items) {
+
+      const [rows] = await pool.query(
+        `SELECT * FROM menu_items 
+         WHERE id_item = ? 
+         AND id_restaurante = ?`,
+        [id_item, id_restaurante]
+      );
+
+      if (rows.length > 0) {
+        items.push(rows[0]);
+      }
+    }
+
+    return callback(null, {
+      restaurant: restaurantRows[0],
+      items
+    });
+
+  } catch (error) {
+    console.error(error);
+    return callback({
+      code: grpc.status.INTERNAL,
+      message: "Error obteniendo detalles de orden"
+    });
+  }
+}
+
 
 // =============================
 // FUNCIÓN PARA CREAR SERVIDOR
@@ -292,7 +438,11 @@ function startCatalogServer() {
     GetMenuItemsByRestaurant,
     CreateRestaurant,
     UpdateRestaurant,
-    DeleteRestaurant
+    DeleteRestaurant,
+    CreateMenuItem,
+    UpdateMenuItem,
+    DeleteMenuItem,
+    GetOrderDetails
   });
 
   server.bindAsync(

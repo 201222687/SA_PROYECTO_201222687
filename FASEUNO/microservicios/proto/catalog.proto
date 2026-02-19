@@ -20,12 +20,28 @@ service CatalogService {
   rpc GetMenuItemsByRestaurant (RestaurantRequest) returns (MenuItemsResponse);
 
   // ===============================
-  // CRUD RESTAURANTES (NUEVO)
+  // CRUD RESTAURANTES (NUEVO) ROL ADMINISTRADOR
   // ===============================
 
   rpc CreateRestaurant (CreateRestaurantRequest) returns (RestaurantActionResponse);
   rpc UpdateRestaurant (UpdateRestaurantRequest) returns (RestaurantActionResponse);
   rpc DeleteRestaurant (DeleteRestaurantRequest) returns (RestaurantActionResponse);
+
+  // ===============================
+  // CRUD RESTAURANTES rol RESTAURANTE
+  // ===============================
+
+  rpc CreateMenuItem (CreateMenuItemRequest) returns (MenuItemActionResponse);
+  rpc UpdateMenuItem (UpdateMenuItemRequest) returns (MenuItemActionResponse);
+  rpc DeleteMenuItem (DeleteMenuItemRequest) returns (MenuItemActionResponse);
+
+
+  // ===============================
+  // Obtener ordenesdetalle
+  // ===============================
+
+  rpc GetOrderDetails (OrderDetailsRequest) returns (OrderDetailsResponse);
+
 }
 
 
@@ -120,4 +136,41 @@ message MenuItem {
   string nombre = 3;
   double precio = 4;
   bool disponible = 5;
+}
+
+message CreateMenuItemRequest {
+  int32 id_restaurante = 1;
+  string nombre = 2;
+  double precio = 3;
+  bool disponible = 4;
+}
+
+message UpdateMenuItemRequest {
+  int32 id_item = 1;
+  string nombre = 2;
+  double precio = 3;
+  bool disponible = 4;
+}
+
+message DeleteMenuItemRequest {
+  int32 id_item = 1;
+}
+
+message MenuItemActionResponse {
+  string mensaje = 1;
+}
+
+
+// ===================================
+// DETALLES PARA ORDER-SERVICE
+// ===================================
+
+message OrderDetailsRequest {
+  int32 id_restaurante = 1;
+  repeated int32 id_items = 2;
+}
+
+message OrderDetailsResponse {
+  Restaurant restaurant = 1;
+  repeated MenuItem items = 2;
 }

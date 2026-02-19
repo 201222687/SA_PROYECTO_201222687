@@ -1,111 +1,105 @@
 // =========================
 // IMPORTACIONES
 // =========================
-
-// useState → para manejar estados (variables dinámicas del componente)
-// useEffect → para ejecutar lógica cuando el componente se carga o cambia algo
 import { useState, useEffect } from 'react';
-
-// Función que llama al backend para crear la orden
-import { createOrder } from '../api/order.api';
-
-// Componente que cierra sesión (borra token y redirige)
+import { createOrder, getMyOrders,updateEstadoOrden  } from '../api/order.api';
 import LogoutButton from '../components/LogoutButton';
-
 
 function Cliente() {
 
   // =========================
-  // ESTADOS (MEMORIA DEL COMPONENTE)
+  // ESTADOS
   // =========================
-
-  // Lista de restaurantes obtenidos del backend
   const [restaurants, setRestaurants] = useState([]);
-
-  // Lista de productos del restaurante seleccionado
   const [menuItems, setMenuItems] = useState([]);
-
-  // Restaurante seleccionado en el <select>
   const [selectedRestaurant, setSelectedRestaurant] = useState('');
-
-  // Productos agregados al carrito
   const [items, setItems] = useState([]);
-
-  // Mensaje de respuesta cuando se crea la orden
   const [mensajeOrden, setMensajeOrden] = useState('');
-
+  const [orders, setOrders] = useState([]);
+  const [activeTab, setActiveTab] = useState('crear'); // <-- TAB AGREGADO
 
   // =========================
-  // CARGAR RESTAURANTES AL INICIAR
+  // CARGAR RESTAURANTES
   // =========================
-  // Este useEffect se ejecuta UNA sola vez
-  // porque el arreglo de dependencias está vacío []
   useEffect(() => {
-
-    // Hace petición al API Gateway
     fetch('http://localhost:5000/catalog/restaurants')
-
-      // Convierte respuesta a JSON
       .then(res => res.json())
-
-      // Guarda restaurantes en el estado
       .then(data => setRestaurants(data.restaurants || []))
-
-      // Si ocurre error lo muestra en consola
       .catch(err => console.error(err));
-
   }, []);
-
 
   // =========================
   // CARGAR PRODUCTOS SEGÚN RESTAURANTE
   // =========================
-  // Este useEffect se ejecuta
-  // cada vez que cambia selectedRestaurant
   useEffect(() => {
 
-    // Si no hay restaurante seleccionado
     if (!selectedRestaurant) {
-      setMenuItems([]); // limpiar productos
+      setMenuItems([]);
       return;
     }
 
-    // Llama al endpoint filtrado por restaurante
     fetch(`http://localhost:5000/catalog/menu-items/${selectedRestaurant}`)
       .then(res => res.json())
       .then(data => {
-
-        // Guarda productos del restaurante
         setMenuItems(data.menuItems || []);
-
-        // Limpia carrito si cambia restaurante
         setItems([]);
       })
       .catch(err => console.error(err));
 
-  }, [selectedRestaurant]); // depende de selectedRestaurant
+  }, [selectedRestaurant]);
+
+  // =========================
+  // CARGAR MIS ORDENES
+  // =========================
+  const cargarOrdenes = async () => {
+    try {
+      const res = await getMyOrders();
+      setOrders(res.data || []);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    cargarOrdenes();
+  }, []);
 
 
   // =========================
-  // AGREGAR PRODUCTO AL CARRITO
+  // CANCELAR ORDEN
+  // =========================
+  const cancelarOrden = async (id_orden) => {
+    try {
+
+      await updateEstadoOrden(id_orden, "CANCELADA");
+
+      // Actualizar estado local sin recargar
+      setOrders(orders.map(order =>
+        order.id_orden === id_orden
+          ? { ...order, estado: "CANCELADA" }
+          : order
+      ));
+
+    } catch (error) {
+      console.error(error);
+      alert("Error al cancelar la orden");
+    }
+  };
+
+  // =========================
+  // AGREGAR PRODUCTO
   // =========================
   const agregarProducto = (producto) => {
 
-    // Verifica si el producto ya está en el carrito
     const existe = items.find(i => i.id_item === producto.id_item);
 
     if (existe) {
-
-      // Si ya existe → solo aumenta cantidad
       setItems(items.map(i =>
         i.id_item === producto.id_item
           ? { ...i, cantidad: i.cantidad + 1 }
           : i
       ));
-
     } else {
-
-      // Si no existe → lo agrega al carrito
       setItems([
         ...items,
         {
@@ -118,26 +112,20 @@ function Cliente() {
     }
   };
 
-
   // =========================
-  // ELIMINAR PRODUCTO DEL CARRITO
+  // ELIMINAR ITEM
   // =========================
   const eliminarItem = (id_item) => {
-
-    // Filtra y elimina el producto seleccionado
     setItems(items.filter(item => item.id_item !== id_item));
   };
 
-
   // =========================
-  // EDITAR CANTIDAD O PRECIO
+  // ACTUALIZAR ITEM
   // =========================
   const actualizarItem = (id_item, campo, valor) => {
 
-    // No permitir cantidad menor a 1
     if (campo === 'cantidad' && valor < 1) return;
 
-    // Actualiza dinámicamente el campo modificado
     setItems(items.map(item =>
       item.id_item === id_item
         ? { ...item, [campo]: valor }
@@ -145,28 +133,24 @@ function Cliente() {
     ));
   };
 
-
   // =========================
-  // CALCULAR TOTAL GENERAL
+  // TOTAL GENERAL
   // =========================
-  // reduce → recorre el carrito y suma subtotales
   const totalGeneral = items.reduce(
     (acc, item) => acc + (item.cantidad * item.precio_cliente),
     0
   );
-
 
   // =========================
   // CREAR ORDEN
   // =========================
   const handleCreateOrder = async (e) => {
 
-    e.preventDefault(); // evita recargar página
+    e.preventDefault();
     setMensajeOrden('');
 
     try {
 
-      // Estructura que se enviará al backend
       const data = {
         id_restaurante: parseInt(selectedRestaurant),
         items: items.map(item => ({
@@ -176,160 +160,257 @@ function Cliente() {
         }))
       };
 
-      // Llamada al API
       const response = await createOrder(data);
 
-      // Mostrar mensaje de éxito
       setMensajeOrden(response.data.mensaje || 'Orden creada correctamente');
 
-      // Limpiar datos después de crear orden
       setSelectedRestaurant('');
       setItems([]);
 
-    } catch (error) {
+      cargarOrdenes();
 
-      // Mostrar error si ocurre
+    } catch (error) {
       setMensajeOrden(
         error.response?.data?.error || 'Error al crear orden'
       );
     }
   };
 
-
   // =========================
-  // INTERFAZ (HTML + JSX)
+  // INTERFAZ
   // =========================
   return (
     <div style={{ padding: 40 }}>
 
       <h1>Módulo Cliente</h1>
 
-      <h3>Crear Orden</h3>
-
-      <form onSubmit={handleCreateOrder}>
-
-        {/* SELECT DE RESTAURANTES */}
-        <select
-          value={selectedRestaurant}
-          onChange={(e) => setSelectedRestaurant(e.target.value)}
-          required
+      {/* =========================
+          TABS
+      ========================= */}
+      <div style={{ marginBottom: 20 }}>
+        <button
+          onClick={() => setActiveTab('crear')}
+          style={{
+            marginRight: 10,
+            background: activeTab === 'crear' ? '#007bff' : '#ccc',
+            color: activeTab === 'crear' ? '#fff' : '#000',
+            padding: '8px 16px',
+            border: 'none',
+            borderRadius: 4
+          }}
         >
-          <option value="">Seleccione Restaurante</option>
+          Crear Orden
+        </button>
 
-          {/* Render dinámico de restaurantes */}
-          {restaurants.map(r => (
-            <option key={r.id_restaurante} value={r.id_restaurante}>
-              {r.nombre}
-            </option>
-          ))}
-        </select>
+        <button
+          onClick={() => setActiveTab('ordenes')}
+          style={{
+            background: activeTab === 'ordenes' ? '#007bff' : '#ccc',
+            color: activeTab === 'ordenes' ? '#fff' : '#000',
+            padding: '8px 16px',
+            border: 'none',
+            borderRadius: 4
+          }}
+        >
+          Mis Órdenes
+        </button>
+      </div>
 
-        <br /><br />
+      {/* =========================
+          TAB CREAR ORDEN
+      ========================= */}
+      {activeTab === 'crear' && (
+        <>
+          <h3>Crear Orden</h3>
 
-        {/* PRODUCTOS SOLO SI HAY RESTAURANTE */}
-        {selectedRestaurant && (
-          <>
-            <h4>Productos Disponibles</h4>
+          <form onSubmit={handleCreateOrder}>
 
-            {menuItems.length === 0 && <p>No hay productos disponibles</p>}
+            <select
+              value={selectedRestaurant}
+              onChange={(e) => setSelectedRestaurant(e.target.value)}
+              required
+            >
+              <option value="">Seleccione Restaurante</option>
 
-            {menuItems.map(producto => (
-              <div key={producto.id_item} style={{ marginBottom: 8 }}>
-                {producto.nombre} - Q{producto.precio}
+              {restaurants.map(r => (
+                <option key={r.id_restaurante} value={r.id_restaurante}>
+                  {r.nombre}
+                </option>
+              ))}
+            </select>
 
-                <button
-                  type="button"
-                  onClick={() => agregarProducto(producto)}
-                  style={{ marginLeft: 10 }}
-                >
-                  Agregar
-                </button>
-              </div>
-            ))}
+            <br /><br />
+
+            {selectedRestaurant && (
+              <>
+                <h4>Productos Disponibles</h4>
+
+                {menuItems.length === 0 && <p>No hay productos disponibles</p>}
+
+                {menuItems.map(producto => (
+                  <div key={producto.id_item} style={{ marginBottom: 8 }}>
+                    {producto.nombre} - Q{producto.precio}
+
+                    <button
+                      type="button"
+                      onClick={() => agregarProducto(producto)}
+                      style={{ marginLeft: 10 }}
+                    >
+                      Agregar
+                    </button>
+                  </div>
+                ))}
+
+                <hr />
+              </>
+            )}
+
+            <h4>Orden Actual</h4>
+
+            {items.length === 0 && <p>No hay productos agregados</p>}
+
+            {items.map(item => {
+
+              const subtotal = item.cantidad * item.precio_cliente;
+
+              return (
+                <div key={item.id_item}>
+                  <strong>{item.nombre}</strong>
+
+                  <div>
+                    Cantidad:
+                    <input
+                      type="number"
+                      min="1"
+                      value={item.cantidad}
+                      onChange={(e) =>
+                        actualizarItem(
+                          item.id_item,
+                          'cantidad',
+                          parseInt(e.target.value)
+                        )
+                      }
+                    />
+
+                    Precio:
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={item.precio_cliente}
+                      onChange={(e) =>
+                        actualizarItem(
+                          item.id_item,
+                          'precio_cliente',
+                          parseFloat(e.target.value)
+                        )
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    Subtotal: Q{subtotal.toFixed(2)}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => eliminarItem(item.id_item)}
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              );
+            })}
 
             <hr />
-          </>
-        )}
 
-        {/* CARRITO */}
-        <h4>Orden Actual</h4>
+            {items.length > 0 && (
+              <>
+                <h3>Total General: Q{totalGeneral.toFixed(2)}</h3>
+                <button type="submit">Crear Orden</button>
+              </>
+            )}
 
-        {items.length === 0 && <p>No hay productos agregados</p>}
+          </form>
 
-        {items.map(item => {
+          {mensajeOrden && <p>{mensajeOrden}</p>}
+        </>
+      )}
 
-          const subtotal = item.cantidad * item.precio_cliente;
+      {/* =========================
+          TAB MIS ORDENES
+      ========================= */}
+      {activeTab === 'ordenes' && (
+        <>
+          <h2>Mis Órdenes</h2>
 
-          return (
-            <div key={item.id_item}>
-              <strong>{item.nombre}</strong>
+          {orders.length === 0 && <p>No tienes órdenes aún</p>}
+
+          {orders.map(order => (
+            <div
+              key={order.id_orden}
+              style={{
+                border: '1px solid #ccc',
+                padding: 15,
+                marginBottom: 15,
+                borderRadius: 6,
+                background: '#f9f9f9'
+              }}
+            >
+              <h3>Orden #{order.id_orden}</h3>
 
               <div>
-                Cantidad:
-                <input
-                  type="number"
-                  min="1"
-                  value={item.cantidad}
-                  onChange={(e) =>
-                    actualizarItem(
-                      item.id_item,
-                      'cantidad',
-                      parseInt(e.target.value)
-                    )
-                  }
-                />
-
-                Precio:
-                <input
-                  type="number"
-                  step="0.01"
-                  value={item.precio_cliente}
-                  onChange={(e) =>
-                    actualizarItem(
-                      item.id_item,
-                      'precio_cliente',
-                      parseFloat(e.target.value)
-                    )
-                  }
-                />
+                <strong>Restaurante:</strong> {order.restaurante?.nombre}
               </div>
 
               <div>
-                Subtotal: Q{subtotal.toFixed(2)}
+                <strong>Estado:</strong> {order.estado}
               </div>
 
-              <button
-                type="button"
-                onClick={() => eliminarItem(item.id_item)}
-              >
-                Eliminar
-              </button>
+              <div>
+                <strong>Total:</strong> Q{parseFloat(order.total).toFixed(2)}
+              </div>
+
+              <div>
+                <strong>Fecha:</strong>{" "}
+                {new Date(order.fecha_creacion).toLocaleString()}
+              </div>
+
+{/* BOTÓN CANCELAR SOLO SI ESTÁ CREADA */}
+              {order.estado === "CREADA" && (
+                <button
+                  onClick={() => cancelarOrden(order.id_orden)}
+                  style={{
+                    marginTop: 10,
+                    backgroundColor: "red",
+                    color: "white",
+                    border: "none",
+                    padding: "6px 12px",
+                    borderRadius: 4,
+                    cursor: "pointer"
+                  }}
+                >
+                  Cancelar Orden
+                </button>
+              )}
+
+              <h4>Detalle</h4>
+
+              {order.detalle?.map(item => (
+                <div key={item.id_detalle} style={{ marginLeft: 10 }}>
+                  • {item.nombre_producto} |
+                  Cant: {item.cantidad} |
+                  Precio: Q{parseFloat(item.precio_unitario).toFixed(2)} |
+                  Subtotal: Q{(item.cantidad * item.precio_unitario).toFixed(2)}
+                </div>
+              ))}
+
             </div>
-          );
-        })}
-
-        <hr />
-
-        {/* TOTAL Y BOTÓN SOLO SI HAY PRODUCTOS */}
-        {items.length > 0 && (
-          <>
-            <h3>Total General: Q{totalGeneral.toFixed(2)}</h3>
-            <button type="submit">
-              Crear Orden
-            </button>
-          </>
-        )}
-
-      </form>
-
-      {/* MENSAJE DEL BACKEND */}
-      {mensajeOrden && (
-        <p>
-          {mensajeOrden}
-        </p>
+          ))}
+        </>
       )}
 
       <br />
+
       <LogoutButton />
 
     </div>

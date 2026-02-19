@@ -18,5 +18,9 @@ CREATE TABLE menu_items (
     id_restaurante INT NOT NULL,
     nombre VARCHAR(150),
     precio DECIMAL(10,2) CHECK (precio >= 0),
-    disponible BOOLEAN DEFAULT TRUE
+    disponible BOOLEAN DEFAULT TRUE,
+    CONSTRAINT fk_menu_restaurante
+    FOREIGN KEY (id_restaurante)
+    REFERENCES restaurantes(id_restaurante)
+    ON DELETE CASCADE
 );

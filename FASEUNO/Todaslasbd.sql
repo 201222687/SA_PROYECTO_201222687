@@ -47,8 +47,14 @@ CREATE TABLE menu_items (
     id_restaurante INT NOT NULL,
     nombre VARCHAR(150),
     precio DECIMAL(10,2) CHECK (precio >= 0),
-    disponible BOOLEAN DEFAULT TRUE
+    disponible BOOLEAN DEFAULT TRUE,
+    CONSTRAINT fk_menu_restaurante
+    FOREIGN KEY (id_restaurante)
+    REFERENCES restaurantes(id_restaurante)
+    ON DELETE CASCADE
 );
+
+
 
 -- ============================================
 -- BASE DE DATOS: order_db
@@ -63,7 +69,7 @@ CREATE TABLE ordenes (
     id_orden INT AUTO_INCREMENT PRIMARY KEY,
     id_cliente INT NOT NULL,
     id_restaurante INT NOT NULL,
-    estado ENUM('CREADA','EN_PROCESO','FINALIZADA','RECHAZADA'),
+    estado ENUM('CREADA','EN_PROCESO','FINALIZADA','RECHAZADA','CANCELADA'),
     total DECIMAL(10,2),
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

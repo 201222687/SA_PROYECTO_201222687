@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../db");
 const client = require("../grpc/catalogClient");
+const authClient = require('../grpc/authClient');
+
 
 // parte de bitacora inicio
 const fs = require("fs");
@@ -166,4 +168,271 @@ router.post("/orden", async (req, res) => {
   }
 });
 
+router.get('/orden/mis-ordenes/:id_cliente', async (req, res) => {
+  try {
+
+    const { id_cliente } = req.params;
+
+    const [ordenes] = await pool.query(
+      'SELECT * FROM ordenes WHERE id_cliente = ? ORDER BY fecha_creacion DESC',
+      [id_cliente]
+    );
+
+    for (let orden of ordenes) {
+
+      const [detalle] = await pool.query(
+        'SELECT * FROM orden_detalle WHERE id_orden = ?',
+        [orden.id_orden]
+      );
+
+      // LLAMADA gRPC A CATALOG PARA ENRIQUECER DATOS
+    
+     const catalogData = await new Promise((resolve, reject) => {
+  client.GetOrderDetails(
+    {
+      id_restaurante: orden.id_restaurante,
+      id_items: detalle.map(d => d.id_item)
+    },
+    (error, result) => {
+      if (error) return reject(error);
+      resolve(result);
+    }
+  );
+});
+
+      // Restaurante completo (según proto nuevo)
+orden.restaurante = catalogData.restaurant;
+
+// unir nombre producto con detalle
+orden.detalle = detalle.map(d => {
+
+  const productoInfo = catalogData.items.find(
+    p => p.id_item === d.id_item
+  );
+
+  return {
+    ...d,
+    nombre_producto: productoInfo?.nombre || "Desconocido"
+  };
+});
+
+
+    }
+
+    res.json(ordenes);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error obteniendo órdenes' });
+  }
+});
+
+
+
+router.put('/orden/:id_orden/estado', async (req, res) => {
+  try {
+
+    const { id_orden } = req.params;
+    const { estado } = req.body;
+
+    const estadosValidos = ['CREADA','EN_PROCESO','FINALIZADA','RECHAZADA','CANCELADA'];
+
+    if (!estadosValidos.includes(estado)) {
+      return res.status(400).json({
+        error: 'Estado inválido'
+      });
+    }
+
+
+    // 1️⃣ Obtener estado actual
+    const [ordenActual] = await pool.query(
+      'SELECT estado, id_cliente FROM ordenes WHERE id_orden = ?',
+      [id_orden]
+    );
+
+    if (ordenActual.length === 0) {
+      return res.status(404).json({
+        error: 'Orden no encontrada'
+      });
+    }
+   
+    const estadoActual = ordenActual[0].estado;
+    const idClienteOrden = ordenActual[0].id_cliente;
+
+    console.log("ESTADO ACTUAL:", estadoActual);
+    console.log("ESTADO SOLICITADO:", estado);
+
+
+    // 2️⃣ Validar transiciones permitidas
+    const transicionesPermitidas = {
+      CREADA: ['EN_PROCESO', 'RECHAZADA','CANCELADA'],
+      EN_PROCESO: ['FINALIZADA'],
+      FINALIZADA: [],
+      RECHAZADA: [],
+      CANCELADA: []
+    };
+
+    if (!transicionesPermitidas[estadoActual].includes(estado)) {
+      return res.status(400).json({
+        error: `No se puede cambiar de ${estadoActual} a ${estado}`
+      });
+    }
+
+// 3️⃣ Validar permisos según rol (si el gateway envía rol e id)
+    const { rol, id_usuario } = req.headers; 
+    // Esto depende de cómo reenvíes los datos desde el Gateway
+
+    
+
+console.log("ROL RECIBIDO:", rol);
+console.log("ID_USUARIO RECIBIDO:", id_usuario);
+
+
+    // CLIENTE solo puede cancelar su propia orden
+    if (rol === 'CLIENTE') {
+
+      if (estado !== 'CANCELADA') {
+        return res.status(403).json({
+          error: 'El cliente solo puede cancelar órdenes'
+        });
+      }
+
+      if (parseInt(id_usuario) !== idClienteOrden) {
+        return res.status(403).json({
+          error: 'No puedes modificar esta orden'
+        });
+      }
+    }
+
+
+    // 3️⃣ Actualizar
+    await pool.query(
+      'UPDATE ordenes SET estado = ? WHERE id_orden = ?',
+      [estado, id_orden]
+    );
+
+    res.json({
+      mensaje: 'Estado actualizado correctamente'
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error actualizando estado' });
+  }
+});
+
+
+router.get('/restaurante/:id', async (req, res) => {
+  try {
+    const id_restaurante = req.params.id;
+
+    const [ordenes] = await pool.query(
+      "SELECT * FROM ordenes WHERE id_restaurante = ? AND estado = 'CREADA'",
+      [id_restaurante]
+    );
+
+    const ordenesEnriquecidas = [];
+
+    for (let orden of ordenes) {
+
+      const cliente = await new Promise((resolve, reject) => {
+        authClient.GetUserById(
+          { id_usuario: orden.id_cliente },
+          (err, response) => {
+            if (err) return reject(err);
+            resolve(response);
+          }
+        );
+      });
+
+      ordenesEnriquecidas.push({
+        ...orden,
+        cliente
+      });
+    }
+
+    res.json(ordenesEnriquecidas);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+router.get('/orden/restaurante2/:id_restaurante', async (req, res) => {
+  try {
+
+    const { id_restaurante } = req.params;
+
+    // Traer órdenes
+    const [ordenes] = await pool.query(
+      'SELECT * FROM ordenes WHERE id_restaurante = ? ORDER BY fecha_creacion DESC',
+      [id_restaurante]
+    );
+
+    if (ordenes.length === 0) {
+      return res.json([]);
+    }
+
+    // Traer TODOS los detalles
+    const idsOrdenes = ordenes.map(o => o.id_orden);
+
+    const [detalles] = await pool.query(
+      'SELECT * FROM orden_detalle WHERE id_orden IN (?)',
+      [idsOrdenes]
+    );
+
+    //  Obtener id_items únicos
+    const idsItems = [...new Set(detalles.map(d => d.id_item))];
+
+    //  UNA sola llamada gRPC
+    const catalogData = await new Promise((resolve, reject) => {
+      client.GetOrderDetails(
+        {
+          id_restaurante: parseInt(id_restaurante),
+          id_items: idsItems
+        },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        }
+      );
+    });
+
+    // 5️⃣ Crear mapa de productos
+    const itemsMap = {};
+    catalogData.items.forEach(item => {
+      itemsMap[item.id_item] = item.nombre;
+    });
+
+    // 6️⃣ Agrupar detalles por orden
+    const detallesPorOrden = {};
+
+    detalles.forEach(d => {
+      if (!detallesPorOrden[d.id_orden]) {
+        detallesPorOrden[d.id_orden] = [];
+      }
+
+      detallesPorOrden[d.id_orden].push({
+        ...d,
+        nombre_producto: itemsMap[d.id_item] || "Desconocido"
+      });
+    });
+
+    // 7️⃣ Armar respuesta final
+    const resultado = ordenes.map(o => ({
+      ...o,
+      restaurante: catalogData.restaurant,
+      detalle: detallesPorOrden[o.id_orden] || []
+    }));
+
+    res.json(resultado);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error obteniendo órdenes del restaurante' });
+  }
+});
 module.exports = router;

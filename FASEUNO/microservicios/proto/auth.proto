@@ -5,6 +5,8 @@ package auth;
 service AuthService {
   rpc Register (RegisterRequest) returns (AuthResponse);
   rpc Login (LoginRequest) returns (AuthResponse);
+
+  rpc GetUserById (GetUserByIdRequest) returns (UserResponse);
 }
 
 message RegisterRequest {
@@ -22,6 +24,18 @@ message LoginRequest {
 message AuthResponse {
   string token = 1;
   int32 id_usuario = 2;
+  string correo = 3;
+  string rol = 4;
+}
+
+//  NUEVOS MENSAJES
+message GetUserByIdRequest {
+  int32 id_usuario = 1;
+}
+
+message UserResponse {
+  int32 id_usuario = 1;
+  string nombre = 2;
   string correo = 3;
   string rol = 4;
 }

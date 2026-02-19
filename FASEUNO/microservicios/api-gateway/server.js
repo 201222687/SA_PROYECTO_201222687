@@ -5,6 +5,7 @@ const fetch = require('node-fetch');
 const authRoutes = require('./src/routes/auth.routes');
 const orderRoutes = require('./src/routes/order.routes'); // order-service
 const catalogRoutes = require("./src/routes/catalog.routes"); // catalog-service
+const menuRoutes = require("./src/routes/menu.routes"); // catalog-service
 
 const app = express();
 
@@ -20,6 +21,8 @@ app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/orden', orderRoutes);
 app.use("/catalog", catalogRoutes);
+app.use("/menu", menuRoutes);
+
 
 const PORT = process.env.PORT || 5000;
 

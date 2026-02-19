@@ -7,6 +7,7 @@ import RegistrarCliente from './pages/RegistrarCliente';
 import Repartidorjsx from './pages/Repartidor';
 import Restaurantejsx from './pages/Restaurante';
 import { jwtDecode } from 'jwt-decode';
+import RestauranteOrdenes from "./pages/RestauranteOrdenes";
 
 function App() {
   const token = localStorage.getItem('token');
@@ -45,7 +46,16 @@ function App() {
       
       
       <Route path="/registrar" element={<RegistrarCliente />} />
-    
+
+
+      <Route
+        path="/restaurantes-ordenes"
+        element={rol === 'RESTAURANTE' ? <RestauranteOrdenes /> : <Navigate to="/login" />}
+      />
+      
+
+     
+
       <Route path="*" element={<h2>Página no encontrada</h2>} />
     </Routes>
   );

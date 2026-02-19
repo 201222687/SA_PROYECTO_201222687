@@ -3,6 +3,7 @@ const grpc = require('@grpc/grpc-js');
 const protoLoader = require('@grpc/proto-loader');
 const jwt = require('jsonwebtoken');
 const path = require('path');
+const  pool  = require('./src/repositories/db');
 
 // RUTAS RELATIVAS CORRECTAS DESDE server.js
 const UserRepository = require('./src/repositories/UserRepository');
@@ -117,7 +118,43 @@ server.addService(proto.AuthService.service, {
     } catch (err) {
       callback(mapErrorToGrpcCode(err));
     }
+  },
+
+GetUserById: async (call, callback) => {
+  try {
+    const { id_usuario } = call.request;
+
+    const [rows] = await pool.query(`
+      SELECT 
+        u.id_usuario,
+        u.nombre,
+        u.correo,
+        r.nombre AS rol
+      FROM usuarios u
+      LEFT JOIN usuario_roles ur ON u.id_usuario = ur.id_usuario
+      LEFT JOIN roles r ON ur.id_role = r.id_role
+      WHERE u.id_usuario = ?
+    `, [id_usuario]);
+
+    if (rows.length === 0) {
+      return callback({
+        code: grpc.status.NOT_FOUND,
+        message: "Usuario no encontrado"
+      });
+    }
+
+    callback(null, rows[0]);
+
+  } catch (error) {
+    callback({
+      code: grpc.status.INTERNAL,
+      message: error.message
+    });
   }
+}
+
+
+
 });
 
 /*

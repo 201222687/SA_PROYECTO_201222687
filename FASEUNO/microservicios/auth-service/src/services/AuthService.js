@@ -63,6 +63,32 @@ class AuthService {
   }
 }
 
+
+GetUserById: async (call, callback) => {
+  try {
+    const id = call.request.id_usuario;
+
+    const usuario = await Usuario.findByPk(id);
+
+    if (!usuario) {
+      return callback({
+        code: grpc.status.NOT_FOUND,
+        message: "Usuario no encontrado"
+      });
+    }
+
+    callback(null, {
+      id_usuario: usuario.id,
+      nombre: usuario.nombre,
+      correo: usuario.correo,
+      rol: usuario.rol
+    });
+
+  } catch (error) {
+    callback(error);
+  }
+}
+
 module.exports = AuthService;
 
 
