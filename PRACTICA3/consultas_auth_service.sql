@@ -2,7 +2,7 @@
 use auth_db;
 
 -- borrar 
-TRUNCATE TABLE  roles;
+-- TRUNCATE TABLE  roles;
 
 -- Ingreso de datos
 INSERT INTO roles (nombre) VALUES ('ADMIN'), ('CLIENTE'),('RESTAURANTE'), ('REPARTIDOR');
