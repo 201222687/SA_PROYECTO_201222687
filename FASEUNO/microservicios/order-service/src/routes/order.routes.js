@@ -3,6 +3,7 @@ const router = express.Router();
 const pool = require("../db");
 const client = require("../grpc/catalogClient");
 const authClient = require('../grpc/authClient');
+const { getChannel } = require("../messaging/rabbitmq");
 
 
 // parte de bitacora inicio
@@ -138,6 +139,9 @@ router.post("/orden", async (req, res) => {
 
     console.log("[Order-Service] Orden creada correctamente");
 
+
+
+
     console.log("Estado Final: ORDEN CREADA");
     console.log("ID Orden:", id_orden);
     console.log("========================================");
@@ -146,6 +150,29 @@ router.post("/orden", async (req, res) => {
     log += `ID Orden: ${id_orden}\n`;
     log += "========================================\n";
     escribirLog(log);
+
+    // =============================
+// PUBLICAR EVENTO A RABBITMQ
+// =============================
+const channel = getChannel();
+
+const evento = {
+  id_orden,
+  id_cliente,
+  id_restaurante,
+  total,
+  estado: "CREADA",
+  fecha: new Date().toISOString()
+};
+
+channel.sendToQueue(
+  "orden_creada",
+  Buffer.from(JSON.stringify(evento)),
+  { persistent: true }
+);
+
+console.log("📤 Evento enviado a RabbitMQ:", evento);
+// ********************************************************
 
     return res.status(201).json({
       mensaje: "Orden creada correctamente",

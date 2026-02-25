@@ -1,5 +1,7 @@
 require("dotenv").config();
 const express = require("express");
+const { connectRabbit } = require("./src/messaging/rabbitmq");
+
 
 const app = express();
 app.use(express.json());
@@ -8,7 +10,11 @@ app.use(express.json());
 const orderRoutes = require("./src/routes/order.routes");
 app.use("/", orderRoutes);
 
+
+connectRabbit();
+
 const PORT = process.env.PORT || 3002;
+
 
 app.listen(PORT, () => {
   console.log(` Order-Service corriendo en puerto ${PORT}`);
