@@ -10,7 +10,8 @@ const menuRoutes = require("./src/routes/menu.routes"); // catalog-service
 const app = express();
 
 app.use(cors({
-  origin: 'http://localhost:3000',
+  //origin: 'http://localhost:3000''http://34.67.219.133:3000',
+  origin: ['http://34.67.219.133:3000','http://localhost:3000'],
   methods: ['GET','POST','PUT','DELETE'],
   credentials: true
 }));
