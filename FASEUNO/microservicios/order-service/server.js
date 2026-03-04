@@ -11,14 +11,32 @@ const orderRoutes = require("./src/routes/order.routes");
 app.use("/", orderRoutes);
 
 
-connectRabbit();
+//connectRabbit();
 
 const PORT = process.env.PORT || 3002;
 
 
+
+async function startServer() {
+  try {
+    await connectRabbit(); // 🔥 Espera conexión Rabbit
+
+    app.listen(PORT, () => {
+      console.log(` Order-Service corriendo en puerto ${PORT}`);
+    });
+
+  } catch (error) {
+    console.error("Error iniciando Order-Service:", error);
+  }
+}
+
+startServer();
+
+/*
 app.listen(PORT, () => {
   console.log(` Order-Service corriendo en puerto ${PORT}`);
 });
+/
 
 /*
 // =============================

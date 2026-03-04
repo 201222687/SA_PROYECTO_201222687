@@ -76,6 +76,7 @@ services:
       - DB_NAME=order_db
       - DB_PORT=3306
       - CATALOG_HOST=catalog-service:50052
+      - RABBIT_URL=amqp://admin:Seguridad2026.@host.docker.internal:5672
     depends_on:
       - catalog-service
     extra_hosts:

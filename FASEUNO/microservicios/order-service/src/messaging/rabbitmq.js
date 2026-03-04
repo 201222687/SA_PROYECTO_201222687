@@ -4,7 +4,11 @@ let channel;
 
 async function connectRabbit() {
   try {
-    const connection = await amqp.connect('amqp://localhost');
+
+    const rabbitUrl = process.env.RABBIT_URL || 'amqp://localhost';
+
+    const connection = await amqp.connect(rabbitUrl);
+
     channel = await connection.createChannel();
 
     const queue = 'orden_creada';
@@ -12,6 +16,8 @@ async function connectRabbit() {
     await channel.assertQueue(queue, {
       durable: false
     });
+
+    console.log("🐰 Conectado a RabbitMQ en:", rabbitUrl);
 
     console.log("🐰 Conectado a RabbitMQ");
 
