@@ -748,3 +748,15 @@ Estado Final: ORDEN CREADA
 ID Orden: 19
 ========================================
 
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-02-28T15:44:40.009Z
+Cliente: 32
+Restaurante: 1
+Items enviados: [{"id_item":1,"cantidad":1,"precio_cliente":80},{"id_item":2,"cantidad":1,"precio_cliente":85}]
+Resultado Validación gRPC: EXITOSA
+Mensaje Validación: Validación exitosa
+Estado Final: ORDEN CREADA
+ID Orden: 20
+========================================
+

@@ -4,6 +4,8 @@ use order_db;
 select * from ordenes;
 select * from orden_detalle;
 
+-- /*/*/*/*/*/*//*/*/*/*/*/*//*/*/*/*/*/*//*/*/*/*/*/*//*/*/*/*/*/*//*/*/*/*/*/*/
+
 -- BORRAR DATOS
 
 -- truncate table ordenes;

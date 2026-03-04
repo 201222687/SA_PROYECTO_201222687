@@ -1,8 +1,9 @@
 use catalog_db;
 
-
 select * from menu_items;
 select * from restaurantes;
+
+-- /*/*/*/*/*/*//*/*/*/*/*/*//*/*/*/*/*/*//*/*/*/*/*/*//*/*/*/*/*/*//*/*/*/*/*/*/
 
 SELECT * FROM menu_items 
 WHERE id_item = 1 
