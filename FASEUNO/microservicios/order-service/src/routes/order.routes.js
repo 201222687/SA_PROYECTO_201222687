@@ -151,8 +151,8 @@ router.post("/orden", async (req, res) => {
     log += "========================================\n";
     escribirLog(log);
 
-    // =============================
-// PUBLICAR EVENTO A RABBITMQ
+// =============================
+// PUBLICAR EVENTO A RABBITMQ a http://34.67.219.133:15672/ dmin , Seguridad2026.
 // =============================
 const channel = getChannel();
 

@@ -4,12 +4,14 @@
 import { useState, useEffect } from 'react';
 import { createOrder, getMyOrders,updateEstadoOrden  } from '../api/order.api';
 import LogoutButton from '../components/LogoutButton';
+import { API } from '../api/api.js';
 
 function Cliente() {
 
   // =========================
   // ESTADOS
   // =========================
+  const AUTH_API  = `${API}`;
   const [restaurants, setRestaurants] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
   const [selectedRestaurant, setSelectedRestaurant] = useState('');
@@ -22,7 +24,8 @@ function Cliente() {
   // CARGAR RESTAURANTES
   // =========================
   useEffect(() => {
-    fetch('http://localhost:5000/catalog/restaurants')
+   // fetch('http://localhost:5000/catalog/restaurants')
+    fetch(`${AUTH_API}/catalog/restaurants`)
       .then(res => res.json())
       .then(data => setRestaurants(data.restaurants || []))
       .catch(err => console.error(err));
@@ -38,7 +41,8 @@ function Cliente() {
       return;
     }
 
-    fetch(`http://localhost:5000/catalog/menu-items/${selectedRestaurant}`)
+   // fetch(`http://localhost:5000/catalog/menu-items/${selectedRestaurant}`)
+    fetch(`${AUTH_API}/catalog/menu-items/${selectedRestaurant}`)
       .then(res => res.json())
       .then(data => {
         setMenuItems(data.menuItems || []);

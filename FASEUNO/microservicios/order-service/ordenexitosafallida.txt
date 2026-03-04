@@ -715,21 +715,22 @@ ID Orden: 16
 
 ========================================
 NUEVA SOLICITUD DE ORDEN
-Fecha: 2026-02-27T23:20:48.510Z
-Cliente: 1
-Restaurante: 2
-Items enviados: [{"id_item":10,"cantidad":2,"precio_cliente":15000},{"id_item":15,"cantidad":1,"precio_cliente":8000}]
-Resultado Validación gRPC: FALLIDA
-Mensaje Validación: Precio incorrecto para producto 10
-Estado Final: ORDEN RECHAZADA
+Fecha: 2026-02-24T00:39:12.881Z
+Cliente: 8
+Restaurante: 1
+Items enviados: [{"id_item":1,"cantidad":1,"precio_cliente":80},{"id_item":2,"cantidad":1,"precio_cliente":95}]
+Resultado Validación gRPC: EXITOSA
+Mensaje Validación: Validación exitosa
+Estado Final: ORDEN CREADA
+ID Orden: 17
 ========================================
 
 ========================================
 NUEVA SOLICITUD DE ORDEN
-Fecha: 2026-02-27T23:27:26.330Z
-Cliente: 31
-Restaurante: 1
-Items enviados: [{"id_item":1,"cantidad":1,"precio_cliente":80},{"id_item":2,"cantidad":1,"precio_cliente":85}]
+Fecha: 2026-02-24T00:39:24.472Z
+Cliente: 8
+Restaurante: 2
+Items enviados: [{"id_item":7,"cantidad":1,"precio_cliente":60},{"id_item":6,"cantidad":1,"precio_cliente":45}]
 Resultado Validación gRPC: EXITOSA
 Mensaje Validación: Validación exitosa
 Estado Final: ORDEN CREADA
@@ -738,10 +739,10 @@ ID Orden: 18
 
 ========================================
 NUEVA SOLICITUD DE ORDEN
-Fecha: 2026-02-28T00:11:06.979Z
-Cliente: 31
-Restaurante: 2
-Items enviados: [{"id_item":6,"cantidad":1,"precio_cliente":45},{"id_item":7,"cantidad":1,"precio_cliente":60}]
+Fecha: 2026-02-24T00:39:33.639Z
+Cliente: 8
+Restaurante: 3
+Items enviados: [{"id_item":12,"cantidad":1,"precio_cliente":70},{"id_item":13,"cantidad":1,"precio_cliente":50}]
 Resultado Validación gRPC: EXITOSA
 Mensaje Validación: Validación exitosa
 Estado Final: ORDEN CREADA
@@ -750,13 +751,223 @@ ID Orden: 19
 
 ========================================
 NUEVA SOLICITUD DE ORDEN
-Fecha: 2026-02-28T15:44:40.009Z
-Cliente: 32
-Restaurante: 1
-Items enviados: [{"id_item":1,"cantidad":1,"precio_cliente":80},{"id_item":2,"cantidad":1,"precio_cliente":85}]
+Fecha: 2026-02-24T00:40:14.564Z
+Cliente: 8
+Restaurante: 4
+Items enviados: [{"id_item":16,"cantidad":1,"precio_cliente":15},{"id_item":17,"cantidad":1,"precio_cliente":18}]
 Resultado Validación gRPC: EXITOSA
 Mensaje Validación: Validación exitosa
 Estado Final: ORDEN CREADA
 ID Orden: 20
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-03-04T05:48:39.741Z
+Cliente: 4
+Restaurante: 1
+Items enviados: [{"id_item":1,"cantidad":1,"precio_cliente":80}]
+Resultado Validación gRPC: EXITOSA
+Mensaje Validación: Validación exitosa
+Estado Final: ORDEN CREADA
+ID Orden: 21
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-03-04T05:48:47.812Z
+Cliente: 4
+Restaurante: 6
+Items enviados: [{"id_item":28,"cantidad":1,"precio_cliente":50}]
+Resultado Validación gRPC: EXITOSA
+Mensaje Validación: Validación exitosa
+Estado Final: ORDEN CREADA
+ID Orden: 22
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-03-04T19:27:58.836Z
+Cliente: 4
+Restaurante: 4
+Items enviados: [{"id_item":17,"cantidad":1,"precio_cliente":18},{"id_item":19,"cantidad":1,"precio_cliente":35}]
+Resultado Validación gRPC: EXITOSA
+Mensaje Validación: Validación exitosa
+Estado Final: ORDEN CREADA
+ID Orden: 23
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-03-04T19:27:58.836Z
+Cliente: 4
+Restaurante: 4
+Items enviados: [{"id_item":17,"cantidad":1,"precio_cliente":18},{"id_item":19,"cantidad":1,"precio_cliente":35}]
+Resultado Validación gRPC: EXITOSA
+Mensaje Validación: Validación exitosa
+Estado Final: ORDEN CREADA
+ID Orden: 23
+========================================
+ERROR INTERNO: Cannot read properties of undefined (reading 'sendToQueue')
+Estado Final: ERROR INTERNO
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-03-04T19:28:05.289Z
+Cliente: 4
+Restaurante: 4
+Items enviados: [{"id_item":17,"cantidad":1,"precio_cliente":18},{"id_item":19,"cantidad":1,"precio_cliente":35}]
+Resultado Validación gRPC: EXITOSA
+Mensaje Validación: Validación exitosa
+Estado Final: ORDEN CREADA
+ID Orden: 24
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-03-04T19:28:05.289Z
+Cliente: 4
+Restaurante: 4
+Items enviados: [{"id_item":17,"cantidad":1,"precio_cliente":18},{"id_item":19,"cantidad":1,"precio_cliente":35}]
+Resultado Validación gRPC: EXITOSA
+Mensaje Validación: Validación exitosa
+Estado Final: ORDEN CREADA
+ID Orden: 24
+========================================
+ERROR INTERNO: Cannot read properties of undefined (reading 'sendToQueue')
+Estado Final: ERROR INTERNO
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-03-04T19:33:59.183Z
+Cliente: 4
+Restaurante: 4
+Items enviados: [{"id_item":17,"cantidad":1,"precio_cliente":18},{"id_item":19,"cantidad":1,"precio_cliente":35}]
+Resultado Validación gRPC: EXITOSA
+Mensaje Validación: Validación exitosa
+Estado Final: ORDEN CREADA
+ID Orden: 25
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-03-04T19:33:59.183Z
+Cliente: 4
+Restaurante: 4
+Items enviados: [{"id_item":17,"cantidad":1,"precio_cliente":18},{"id_item":19,"cantidad":1,"precio_cliente":35}]
+Resultado Validación gRPC: EXITOSA
+Mensaje Validación: Validación exitosa
+Estado Final: ORDEN CREADA
+ID Orden: 25
+========================================
+ERROR INTERNO: Cannot read properties of undefined (reading 'sendToQueue')
+Estado Final: ERROR INTERNO
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-03-04T19:37:36.804Z
+Cliente: 4
+Restaurante: 4
+Items enviados: [{"id_item":17,"cantidad":1,"precio_cliente":18},{"id_item":19,"cantidad":1,"precio_cliente":35}]
+Resultado Validación gRPC: EXITOSA
+Mensaje Validación: Validación exitosa
+Estado Final: ORDEN CREADA
+ID Orden: 26
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-03-04T19:37:36.804Z
+Cliente: 4
+Restaurante: 4
+Items enviados: [{"id_item":17,"cantidad":1,"precio_cliente":18},{"id_item":19,"cantidad":1,"precio_cliente":35}]
+Resultado Validación gRPC: EXITOSA
+Mensaje Validación: Validación exitosa
+Estado Final: ORDEN CREADA
+ID Orden: 26
+========================================
+ERROR INTERNO: Cannot read properties of undefined (reading 'sendToQueue')
+Estado Final: ERROR INTERNO
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-03-04T20:09:06.517Z
+Cliente: 4
+Restaurante: 1
+Items enviados: [{"id_item":2,"cantidad":1,"precio_cliente":95}]
+Resultado Validación gRPC: EXITOSA
+Mensaje Validación: Validación exitosa
+Estado Final: ORDEN CREADA
+ID Orden: 27
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-03-04T20:09:06.517Z
+Cliente: 4
+Restaurante: 1
+Items enviados: [{"id_item":2,"cantidad":1,"precio_cliente":95}]
+Resultado Validación gRPC: EXITOSA
+Mensaje Validación: Validación exitosa
+Estado Final: ORDEN CREADA
+ID Orden: 27
+========================================
+ERROR INTERNO: Cannot read properties of undefined (reading 'sendToQueue')
+Estado Final: ERROR INTERNO
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-03-04T20:19:45.882Z
+Cliente: 4
+Restaurante: 1
+Items enviados: [{"id_item":3,"cantidad":1,"precio_cliente":65}]
+Resultado Validación gRPC: EXITOSA
+Mensaje Validación: Validación exitosa
+Estado Final: ORDEN CREADA
+ID Orden: 28
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-03-04T20:19:45.882Z
+Cliente: 4
+Restaurante: 1
+Items enviados: [{"id_item":3,"cantidad":1,"precio_cliente":65}]
+Resultado Validación gRPC: EXITOSA
+Mensaje Validación: Validación exitosa
+Estado Final: ORDEN CREADA
+ID Orden: 28
+========================================
+ERROR INTERNO: Cannot read properties of undefined (reading 'sendToQueue')
+Estado Final: ERROR INTERNO
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-03-04T20:28:47.227Z
+Cliente: 4
+Restaurante: 3
+Items enviados: [{"id_item":11,"cantidad":1,"precio_cliente":54},{"id_item":12,"cantidad":1,"precio_cliente":70}]
+Resultado Validación gRPC: EXITOSA
+Mensaje Validación: Validación exitosa
+Estado Final: ORDEN CREADA
+ID Orden: 29
+========================================
+
+========================================
+NUEVA SOLICITUD DE ORDEN
+Fecha: 2026-03-04T20:29:14.100Z
+Cliente: 4
+Restaurante: 2
+Items enviados: [{"id_item":8,"cantidad":1,"precio_cliente":20}]
+Resultado Validación gRPC: EXITOSA
+Mensaje Validación: Validación exitosa
+Estado Final: ORDEN CREADA
+ID Orden: 30
 ========================================
 
